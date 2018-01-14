@@ -48,7 +48,7 @@ sub BatteryStatusFunction($$)
 #  Log3(undef, 1, "my_StoreBatteryStatus      Device: $Device       Event: $Event      Model: $Model");
   
   # ignoring Devices that were just created by autocreate
-  if($DeviceNameParts[0] eq "HM" || $DeviceNameParts[0] eq "ZWave" || $DeviceNameParts[0] eq "MAX"))
+  if($DeviceNameParts[0] eq "HM" || $DeviceNameParts[0] eq "ZWave" || $DeviceNameParts[0] eq "MAX")
   {
     Log3(undef, 1, "my_StoreBatteryStatus      ignoring Device: $Device");
     return;
