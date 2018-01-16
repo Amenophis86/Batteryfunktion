@@ -79,7 +79,7 @@ sub BatteryStatusFunction($$)
       if(ReadingsVal($BatteryStatusBot, $SignalDevice, "none") eq "low" || ReadingsVal($BatteryStatus, $Device, 100) < 25)
       {
         # set date/time for changed battery if it was low before (so probably a change happended)
-        fhem("setreading $BatteryChanged $text_changed");
+        fhem("setreading $BatteryChanged $Device $text_changed");
         # set the signal state back to none
         fhem("setreading $BatteryStatusBot $SignalDevice none");
       }
@@ -117,7 +117,7 @@ sub BatteryStatusFunction($$)
       if(ReadingsVal($BatteryStatusBot, $SignalDevice, "none") eq "low" || ReadingsVal($BatteryStatus, $Device, 100) < 25)
       {
         # set date/time for changed battery if it was low before (so probably a change happended)
-        fhem("setreading $BatteryChanged $text_changed");
+        fhem("setreading $BatteryChanged $Device $text_changed");
         # set the signal state back to none
         fhem("setreading $BatteryStatusBot $SignalDevice none");
       }
@@ -348,7 +348,7 @@ sub BatteryStatusFunction($$)
       if(ReadingsVal($BatteryStatusBot, $SignalDevice, "none") eq "low")
       {
         # set date/time for changed battery if it was low before (so probably a change happended)
-        fhem("setreading $BatteryChanged $text_changed");
+        fhem("setreading $BatteryChanged $Device $text_changed");
         # set the signal state back to none
         fhem("setreading $BatteryStatusBot $SignalDevice none");
       }
@@ -449,5 +449,5 @@ sub BatteryStart()
 	}
  }
  
- fhem("define $Notify notify .*:battery.* {BatterieStatusFunction(\$NAME, \$EVENT)}; attr $Notify room $Room;")
+ fhem("define $Notify notify .*:battery.* {BatteryStatusFunction(\$NAME, \$EVENT)}; attr $Notify room $Room;")
 }
