@@ -1,20 +1,3 @@
-##############################################
-# $Id: Batterycheck.pm 7570 2017-01-13 13:01:44Z amenophis86 $
-# original by MadMax-FHEM
-
-package main;
-
-use strict;
-use warnings;
-use POSIX;
-
-sub
-myUtils_Initialize($$)
-{
-  my ($hash) = @_;
-}
-
-
 #########################################################################
 # Helper for readingsGroup BatteryStatus:
 # reads the battery states of devices and
@@ -36,14 +19,27 @@ sub BatteryStatusFunction($$)
 ###############################
 # Here you can change the variables to fit your installation.
 #
-  my $myTelegramBot = "Telegram"; #Name of the TelegramBot device
   my $text_now = "Die Batterien von $Device müssen JETZT gewechselt werden!"; #Text for changing battery now
   my $text_soon = "Die Batterien von $Device sollten bald gewechselt werden!"; #Text for changing battery soon
   my $text_changed = "Batterie zuletzt gewechselt: "; #Text for last change
   my $BatteryStatus = "BatterieStatus"; #Name of the Dummy for status
   my $BatteryStatusBot = "BatterieStatusBot"; #Name of the Dummy for status of send messages
   my $BatteryChanged = "BatterieWechsel"; #Name of the Dummy for battery changed information
-  
+
+################################
+# Here you choos your message device and how to send
+# comment the device you do not want to use
+#
+# TelegramBot
+  my $msg = "set TelegramBot message \@\@User ";
+#
+# msg-command
+# my $msg = "msg \@User title='Battery Check' ";
+#
+# Pushover 
+# my $msg = "set Pushover msg device=User title='Battery Check' ";
+
+
   
 #  Log3(undef, 1, "my_StoreBatteryStatus      Device: $Device       Event: $Event      Model: $Model");
   
@@ -95,7 +91,7 @@ sub BatteryStatusFunction($$)
         # set signal state to low
         fhem("setreading $BatteryStatusBot $SignalDevice low");
         #send message via TelegramBot
-        fhem("set $myTelegramBot message $text_soon");
+        fhem($msg." ".$text_soon);
       }
 
       # status is NOT "ok" ("low") so we set to 0% (we don't know better)
@@ -162,11 +158,11 @@ sub BatteryStatusFunction($$)
           #send message via TelegramBot
           if(ReadingsVal($Device, "motorErr", "ok") eq "ValveErrorPosition")
           {
-            fhem("set $myTelegramBot message $text_now");
+            fhem($msg." ".$text_now);
           }
           else
           {
-            fhem("set $myTelegramBot message $text_soon");
+            fhem($msg." ".$text_soon);
           }
         }
       }
@@ -187,7 +183,7 @@ sub BatteryStatusFunction($$)
         # set signal state to low
         fhem("setreading $BatteryStatusBot $SignalDevice low");
         #send message via TelegramBot
-        fhem("set $myTelegramBot message $text_soon");
+        fhem($msg." ".$text_soon);
       }
     }
   }
@@ -264,7 +260,7 @@ sub BatteryStatusFunction($$)
        # set signal state to low
        fhem("setreading $BatteryStatusBot $SignalDevice low");
        #send message via TelegramBot
-       fhem("set $myTelegramBot message $text_soon");
+       fhem($msg." ".$text_soon);
      }
    }
  }
@@ -332,7 +328,7 @@ sub BatteryStatusFunction($$)
         # set signal state to low
         fhem("setreading $BatteryStatusBot $SignalDevice low");
         #send message via TelegramBot
-        fhem("set $myTelegramBot message $text_soon");
+        fhem($msg." ".$text_soon);
       }
     }
   }
@@ -364,7 +360,7 @@ sub BatteryStatusFunction($$)
         # set signal state to low
         fhem("setreading $BatteryStatusBot $SignalDevice low");
         #send message via TelegramBot
-        fhem("set $myTelegramBot message $text_soon");
+        fhem($msg." ".$text_soon);
       }
 
       # status is NOT "ok" ("low") so we set to 0% (we don't know better)
