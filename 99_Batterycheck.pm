@@ -98,7 +98,6 @@ sub BatteryStatusFunction($$)
       fhem("setreading $BatteryStatus $Device 0");
     }
   }
-  
   ##############################################
   # HM Devices with batteryLevel
   ##############################################
@@ -188,7 +187,6 @@ sub BatteryStatusFunction($$)
       }
     }
   }
-  
   ##############################################
   # ZWave Devices
   ##############################################
@@ -266,10 +264,9 @@ sub BatteryStatusFunction($$)
      }
    }
  }
- 
- #############################################
- # XiaomiFlowerSens Devices
- #############################################
+  #############################################
+  # XiaomiFlowerSens Devices
+  #############################################
  elsif($BatteryType[0] eq "batteryLevel"  && InternalVal($Device, "TYPE", "undef") eq "XiaomiFlowerSens")
  {
    $ActBatLevel = ReadingsNum($Device, "batteryLevel", "0");
@@ -370,9 +367,9 @@ sub BatteryStatusFunction($$)
       fhem("setreading $BatteryStatus $Device 0");
     }
   }
-  
+    
   ##############################################
-  # LaCrosse Devices 
+  # LaCrosse Devices
   ##############################################
   elsif(($BatteryType[0] eq "battery")  && ($TYPE eq "LaCrosse"))
   {
@@ -404,7 +401,42 @@ sub BatteryStatusFunction($$)
       # status is NOT "ok" ("low") so we set to 0% (we don't know better)
       fhem("setreading $BatteryStatus $Device 0");
     }
-  } 
+  }
+  
+  ##############################################
+  # All Other Devices
+  ##############################################
+  elsif(($BatteryType[0] eq "battery"))
+  {
+    if(ReadingsVal($Device, "battery", "low") eq "ok")
+    {
+      # check if battery was low before -> possibly changed
+      if(ReadingsVal($BatteryStatusBot, $SignalDevice, "none") eq "low")
+      {
+        # set date/time for changed battery if it was low before (so probably a change happended)
+        fhem("setreading $BatteryChanged $Device $text_changed");
+        # set the signal state back to none
+        fhem("setreading $BatteryStatusBot $SignalDevice none");
+      }
+
+      # status is "ok" so we set to 100% (we don't know better)
+      fhem("setreading $BatteryStatus $Device 100");
+    }
+    else
+    {
+      # check if message was already sent
+      if(ReadingsVal($BatteryStatusBot, $SignalDevice, "none") ne "low")
+      {
+        # set signal state to low
+        fhem("setreading $BatteryStatusBot $SignalDevice low");
+        #send message via TelegramBot
+        fhem($msg." ".$text_soon);
+      }
+
+      # status is NOT "ok" ("low") so we set to 0% (we don't know better)
+      fhem("setreading $BatteryStatus $Device 0");
+    }
+  }
 }
 
 ##################################################
