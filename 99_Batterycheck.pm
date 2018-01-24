@@ -98,6 +98,7 @@ sub BatteryStatusFunction($$)
       fhem("setreading $BatteryStatus $Device 0");
     }
   }
+  
   ##############################################
   # HM Devices with batteryLevel
   ##############################################
@@ -187,6 +188,7 @@ sub BatteryStatusFunction($$)
       }
     }
   }
+  
   ##############################################
   # ZWave Devices
   ##############################################
@@ -264,9 +266,10 @@ sub BatteryStatusFunction($$)
      }
    }
  }
-  #############################################
-  # XiaomiFlowerSens Devices
-  #############################################
+ 
+ #############################################
+ # XiaomiFlowerSens Devices
+ #############################################
  elsif($BatteryType[0] eq "batteryLevel"  && InternalVal($Device, "TYPE", "undef") eq "XiaomiFlowerSens")
  {
    $ActBatLevel = ReadingsNum($Device, "batteryLevel", "0");
