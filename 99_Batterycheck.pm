@@ -75,7 +75,7 @@ sub BatteryStatusFunction($$)
    ##############################################
    # HM Devices with battery
    ##############################################
-   if($TYPE eq "CUL_HM" and InternalVal($Device, "batteryLevel", "undef") eq "undef")
+   if($TYPE eq "CUL_HM" and ReadingsVal($Device, "batteryLevel", "undef") eq "undef")
 	{
 	 if(ReadingsVal($Device, "battery", "low") eq "ok")
 		{
@@ -110,7 +110,7 @@ sub BatteryStatusFunction($$)
    ##############################################
    # ZWave Devices with battery
    ##############################################
-   elsif($TYPE eq "ZWave" and InternalVal($Device, "batteryLevel", "undef") eq "undef")
+   elsif($TYPE eq "ZWave" and ReadingsVal($Device, "batteryLevel", "undef") eq "undef")
    {
 	if(ReadingsVal($Device, "battery", "na") eq "low")
 		{
@@ -188,7 +188,7 @@ sub BatteryStatusFunction($$)
    ##############################################
    # Xiaomi Devices with battery
    ##############################################
-   elsif($TYPE =~ "Xiaomi" and InternalVal($Device, "batteryLevel", "undef") eq "undef")
+   elsif($TYPE =~ "Xiaomi" and ReadingsVal($Device, "batteryLevel", "undef") eq "undef")
    {
     
    }
@@ -196,7 +196,7 @@ sub BatteryStatusFunction($$)
    ##############################################
    # MAX! Devices with battery
    ##############################################
-   elsif($TYPE eq "MAX" and InternalVal($Device, "batteryLevel", "undef") eq "undef")
+   elsif($TYPE eq "MAX" and ReadingsVal($Device, "batteryLevel", "undef") eq "undef")
    {
 	if(ReadingsVal($Device, "battery", "low") eq "ok")
 		{
@@ -231,7 +231,7 @@ sub BatteryStatusFunction($$)
    ##############################################
    # LaCrosse Devices with battery
    ##############################################
-   elsif($TYPE eq "LaCrosse" and InternalVal($Device, "batteryLevel", "undef") eq "undef")
+   elsif($TYPE eq "LaCrosse" and ReadingsVal($Device, "batteryLevel", "undef") eq "undef")
    {
 	if(ReadingsVal($Device, "battery", "low") eq "ok")
 		{
@@ -266,7 +266,7 @@ sub BatteryStatusFunction($$)
    ##############################################
    # All other Devices with battery
    ##############################################
-   elsif (InternalVal($Device, "batteryLevel", "undef") eq "undef")
+   elsif (ReadingsVal($Device, "batteryLevel", "undef") eq "undef")
    {
     if(ReadingsVal($Device, "battery", "low") eq "ok")
 		{
