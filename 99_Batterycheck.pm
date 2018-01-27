@@ -53,7 +53,7 @@ sub BatteryStatusFunction($$)
   # if it is the first time for that device set it to none (initialize)
   if(ReadingsVal($BatteryStatusBot, $SignalDevice, "undef") eq "undef")
   {
-    fhem("setreading $BatteryStatusBot $SignalDevice none");
+    readingsSingleUpdate($defs{$BatteryStatusBot}, $SignalDevice, "none", 0);
   }
     
   # actually only devices HM-TC-IT-WM-W-EU and HM-CC-RT-DN have battery level and min-level
@@ -83,13 +83,13 @@ sub BatteryStatusFunction($$)
 		  if(ReadingsVal($BatteryStatusBot, $SignalDevice, "none") eq "low" || ReadingsVal($BatteryStatus, $Device, 100) < 25)
 		  {
 			# set date/time for changed battery if it was low before (so probably a change happended)
-			fhem("setreading $BatteryChanged $Device $text_changed");
+			readingsSingleUpdate($defs{$BatteryChanged}, $Device, $text_changed, 0);
 			# set the signal state back to none
-			fhem("setreading $BatteryStatusBot $SignalDevice none");
+			readingsSingleUpdate($defs{$BatteryStatusBot}, $SignalDevice, none, 0);
 		  }
 
 		  # status is "ok" so we set to 100% (we don't know better)
-		  fhem("setreading $BatteryStatus $Device 100");
+		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 100, 0);
 		}
     else
 		{
@@ -97,13 +97,13 @@ sub BatteryStatusFunction($$)
 		  if(ReadingsVal($BatteryStatusBot, $SignalDevice, "none") ne "low")
 		  {
 			# set signal state to low
-			fhem("setreading $BatteryStatusBot $SignalDevice low");
+			readingsSingleUpdate($defs{$BatteryStatusBot}, $SignalDevice, "low", 0);
 			#send message via TelegramBot
 			fhem($msg." ".$text_soon);
 		  }
 
 		  # status is NOT "ok" ("low") so we set to 0% (we don't know better)
-		  fhem("setreading $BatteryStatus $Device 0");
+		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 0, 0);
 		}
    }
    
@@ -126,41 +126,41 @@ sub BatteryStatusFunction($$)
 		 # set date/time for changed battery if it was low before (so probably a change happended)
 		 if(ReadingsVal($BatteryStatusBot, $SignalDevice, "none") eq "low" || ReadingsVal($BatteryStatus, $Device, 100) < 25)
 		 {
-		   fhem("setreading $BatteryChanged $Device $text_changed");
+		   readingsSingleUpdate($defs{$BatteryChanged}, $Device, $text_changed, 0);
 		 }
 
 		 # set the battery value to 75% - 100%
-		 fhem("setreading $BatteryStatus $Device 100");
+		 readingsSingleUpdate($defs{$BatteryStatus}, $Device, 100, 0);
 
 		 # set the signal state back to none
-		 fhem("setreading $BatteryStatusBot $SignalDevice none");
+		 readingsSingleUpdate($defs{$BatteryStatusBot}, $SignalDevice, "none", 0);
 	   }
 	elsif($ActBatLevel > 50)
 	   {
 		# between 50% and 75%
-		 fhem("setreading $BatteryStatus $Device 75");
+		 readingsSingleUpdate($defs{$BatteryStatus}, $Device, 75, 0);
 
 		 # set the signal state back to none
 		 if(ReadingsVal($BatteryStatusBot, $SignalDevice, "none") ne "none")
 		 {
-		   fhem("setreading $BatteryStatusBot $SignalDevice none");
+		   readingsSingleUpdate($defs{$BatteryStatusBot}, $SignalDevice, "none", 0);
 		 }
 	   }
 	elsif($ActBatLevel > 25)
 	   {
 		 # between 25% and 50%
-		 fhem("setreading $BatteryStatus $Device 50");
+		 readingsSingleUpdate($defs{$BatteryStatus}, $Device, 50, 0);
 
 		 # set the signal state back to none
 		 if(ReadingsVal($BatteryStatusBot, $SignalDevice, "none") ne "none")
 		 {
-		   fhem("setreading $BatteryStatusBot $SignalDevice none");
+		   readingsSingleUpdate($defs{$BatteryStatusBot}, $SignalDevice, "none", 0);
 		 }
 	   }
 	elsif($ActBatLevel > 5)
 	   {
 		 # between 5% and 25%
-		 fhem("setreading $BatteryStatus $Device 25");
+		 readingsSingleUpdate($defs{$BatteryStatus}, $Device, 25, 0);
 
 		 # maybe already send a message! Easy possible with new signal states
 	   }
@@ -172,13 +172,13 @@ sub BatteryStatusFunction($$)
 		  # TODO: test for 0 and then send "change NOW"!
 		  # TODO: test for 0 and then send "change NOW"!
 		 # totally empty (below 5%)
-		 fhem("setreading $BatteryStatus $Device 0");
+		 readingsSingleUpdate($defs{$BatteryStatus}, $Device, 0, 0);
 
 		 # check if message was already sent
 		 if(ReadingsVal($BatteryStatusBot, $SignalDevice, "low") ne "low")
 		 {
 		   # set signal state to low
-		   fhem("setreading $BatteryStatusBot $SignalDevice low");
+		   readingsSingleUpdate($defs{$BatteryStatusBot}, $SignalDevice, "low", 0);
 		   #send message via TelegramBot
 		   fhem($msg." ".$text_soon);
 		 }
@@ -190,27 +190,19 @@ sub BatteryStatusFunction($$)
    ##############################################
    elsif($TYPE =~ "Xiaomi" and ReadingsVal($Device, "batteryLevel", "undef") eq "undef")
    {
-    
-   }
-   
-   ##############################################
-   # MAX! Devices with battery
-   ##############################################
-   elsif($TYPE eq "MAX" and ReadingsVal($Device, "batteryLevel", "undef") eq "undef")
-   {
-	if(ReadingsVal($Device, "battery", "low") eq "ok")
+    if(ReadingsVal($Device, "battery", "low") eq "ok")
 		{
 		  # check if battery was low before -> possibly changed
 	    if(ReadingsVal($BatteryStatusBot, $SignalDevice, "none") eq "low")
 		  {
 			# set date/time for changed battery if it was low before (so probably a change happended)
-			fhem("setreading $BatteryChanged $Device $text_changed");
+			readingsSingleUpdate($defs{$BatteryChanged}, $Device, $text_changed, 0);
 			# set the signal state back to none
-			fhem("setreading $BatteryStatusBot $SignalDevice none");
+			readingsSingleUpdate($defs{$BatteryStatusBot}, $SignalDevice, "none", 0);
 		  }
 
 		  # status is "ok" so we set to 100% (we don't know better)
-		  fhem("setreading $BatteryStatus $Device 100");
+		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 100, 0);
 		}
 	else
 		{
@@ -218,13 +210,75 @@ sub BatteryStatusFunction($$)
 		if(ReadingsVal($BatteryStatusBot, $SignalDevice, "none") ne "low")
 		  {
 			# set signal state to low
-			fhem("setreading $BatteryStatusBot $SignalDevice low");
+			readingsSingleUpdate($defs{$BatteryStatusBot}, $SignalDevice, "low", 0);
 			#send message via TelegramBot
 			fhem($msg." ".$text_soon);
 		  }
 
 		  # status is NOT "ok" ("low") so we set to 0% (we don't know better)
-		  fhem("setreading $BatteryStatus $Device 0");
+		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 0, 0);
+		}
+   }
+   
+   ##############################################
+   # MAX! Devices with battery
+   ##############################################
+   elsif($TYPE eq "MAX" and ReadingsVal($Device, "batteryLevel", "undef") eq "undef")
+   {
+	my $level = ReadingsNum($BatteryStatus, $Device, 0);
+
+    if($Event eq "battery: ok")
+		{
+		 # Log3(undef, 3,"$Device, Batt ok");
+		  if (defined($defs{"at_BatLow_".$Device})) # temporary at allready defined?
+		 {
+		 CommandDelete(undef,"at_BatLow_".$Device)  if (defined($defs{"at_BatLow_".$Device})); #if defined delete it, battery not dead yet or allready changed?
+		  Log3(undef, 3,"$Device, deleted at_BatLow_".$Device);
+		 }
+		 return undef;
+		}
+     elsif ($Event eq "battery: low")
+		{
+		 Log3(undef, 3,"$Device, Batt low");
+		 
+		return undef  if (ReadingsAge($BatteryStatus, $Device,0) < 600); #take some time since the last event
+		 Log3(undef, 3,"$Device, Batt low2");
+		  if($level == 100)
+		  {
+		   readingsSingleUpdate($defs{$BatteryStatus},$Device, 75,0); # set battery level 75%
+		   return undef;
+		  }
+		  elsif ($level > 25)
+		  {
+			$level -=5;
+			readingsSingleUpdate($defs{$BatteryStatus}, $Device, $level,0); # reduce battery level by 5 with every event
+			Log3(undef, 3,"$Device, Batt Level $level");
+			return undef;
+		  } 
+		   elsif ($level == 25)
+		  {
+			readingsSingleUpdate($defs{$BatteryStatusBot}, $SignalDevice ,"low",0);# set battery level to low and send message
+			fhem($msg." ".$text_soon);
+
+			my $time_s = strftime("\%H:\%M:\%S", gmtime(43200));  # 12 hours waittime for the temp at  
+			my $error = CommandDefine(undef, "at_BatLow_".$Device." at +".$time_s." {BatteryStatusFunction('".$Device."','battery: dead')}");
+			if (!$error) { $attr{"at_BatLow_".$Device}{room} = AttrVal($BatteryStatus,"room","Unsorted"); }
+			else { Log3(undef, 3,"$Device, temp at error -> $error"); }
+			return undef; 
+		  }
+		   else { Log3(undef, 3,"$Device, unknown Level $level") if ($level);}
+		}
+     elsif ($Event eq "battery: dead")
+		{
+		 Log3(undef, 3,"$Device, dead Event !");
+		 readingsSingleUpdate($defs{$BatteryStatus},$Device,0,1); # set device 0 with an event 
+		 readingsSingleUpdate($defs{$BatteryStatusBot},$SignalDevice,"dead",0); # set device dead without event 
+		 fhem($msg." ".$text_now);
+		 return undef;
+		}
+     else
+		{
+		 Log3(undef, 3,"$Device, unknown Event $Event");
 		}
    }
    
@@ -239,13 +293,13 @@ sub BatteryStatusFunction($$)
 	    if(ReadingsVal($BatteryStatusBot, $SignalDevice, "none") eq "low")
 		  {
 			# set date/time for changed battery if it was low before (so probably a change happended)
-			fhem("setreading $BatteryChanged $Device $text_changed");
+			readingsSingleUpdate($defs{$BatteryChanged}, $Device, $text_changed, 0);
 			# set the signal state back to none
-			fhem("setreading $BatteryStatusBot $SignalDevice none");
+			readingsSingleUpdate($defs{$BatteryStatusBot}, $SignalDevice, "none", 0);
 		  }
 
 		  # status is "ok" so we set to 100% (we don't know better)
-		  fhem("setreading $BatteryStatus $Device 100");
+		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 100, 0);
 		}
 	else
 		{
@@ -253,13 +307,13 @@ sub BatteryStatusFunction($$)
 		if(ReadingsVal($BatteryStatusBot, $SignalDevice, "none") ne "low")
 		  {
 			# set signal state to low
-			fhem("setreading $BatteryStatusBot $SignalDevice low");
+			readingsSingleUpdate($defs{$BatteryStatusBot}, $SignalDevice, "low", 0);
 			#send message via TelegramBot
 			fhem($msg." ".$text_soon);
 		  }
 
 		  # status is NOT "ok" ("low") so we set to 0% (we don't know better)
-		  fhem("setreading $BatteryStatus $Device 0");
+		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 0, 0);
 		}
    }
    
@@ -274,13 +328,13 @@ sub BatteryStatusFunction($$)
 		if(ReadingsVal($BatteryStatusBot, $SignalDevice, "none") eq "low")
 		  {
 			# set date/time for changed battery if it was low before (so probably a change happended)
-			fhem("setreading $BatteryChanged $Device $text_changed");
+			readingsSingleUpdate($defs{$BatteryChanged}, $Device, $text_changed, 0);
 			# set the signal state back to none
-			fhem("setreading $BatteryStatusBot $SignalDevice none");
+			readingsSingleUpdate($defs{$BatteryStatusBot}, $SignalDevice, "none", 0);
 		  }
 
 		  # status is "ok" so we set to 100% (we don't know better)
-		  fhem("setreading $BatteryStatus $Device 100");
+		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 100, 0);
 		}
 	else
 		{
@@ -288,13 +342,13 @@ sub BatteryStatusFunction($$)
 		if(ReadingsVal($BatteryStatusBot, $SignalDevice, "none") ne "low")
 		  {
 			# set signal state to low
-			fhem("setreading $BatteryStatusBot $SignalDevice low");
+			readingsSingleUpdate($defs{$BatteryStatusBot}, $SignalDevice, "low", 0);
 			#send message via TelegramBot
 			fhem($msg." ".$text_soon);
 		  }
 
 		  # status is NOT "ok" ("low") so we set to 0% (we don't know better)
-		  fhem("setreading $BatteryStatus $Device 0");
+		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 0, 0);
 		}
    }
   
@@ -323,34 +377,34 @@ sub BatteryStatusFunction($$)
 		if(ReadingsVal($BatteryStatusBot, $SignalDevice, "none") eq "low" || ReadingsVal($BatteryStatus, $Device, 100) < 25)
 		  {
 			# set date/time for changed battery if it was low before (so probably a change happended)
-			fhem("setreading $BatteryChanged $Device $text_changed");
+			readingsSingleUpdate($defs{$BatteryChanged}, $Device, $text_changed, 0);
 			# set the signal state back to none
-			fhem("setreading $BatteryStatusBot $SignalDevice none");
+			readingsSingleUpdate($defs{$BatteryStatusBot}, $SignalDevice, "none", 0);
 		  }
 
 		  # set battery value to 100%
-		  fhem("setreading $BatteryStatus $Device 100");
+		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 100, 0);
 		}
 	elsif(($ActBatLevel - $MinBatLevel) > (2 * $RemainingVoltageQuater))
 		{
 		  # between 50% and 75%
-		  fhem("setreading $BatteryStatus $Device 75");
+		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 75, 0);
 
 		  # set the signal state back to none
 		if(ReadingsVal($BatteryStatusBot, $SignalDevice, "none") ne "none")
 		  {
-			fhem("setreading $BatteryStatusBot $SignalDevice none");
+			readingsSingleUpdate($defs{$BatteryStatusBot}, $SignalDevice, "none", 0);
 		  }
 		}
 	elsif(($ActBatLevel - $MinBatLevel) > (1 * $RemainingVoltageQuater))
 		{
 		  # between 25% and 50%
-		  fhem("setreading $BatteryStatus $Device 50");
+		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 50, 0);
 
 		  # set the signal state back to none
 		if(ReadingsVal($BatteryStatusBot, $SignalDevice, "none") ne "none")
 		  {
-			fhem("setreading $BatteryStatusBot $SignalDevice none");
+			readingsSingleUpdate($defs{$BatteryStatusBot}, $SignalDevice, "none", 0);
 		  }
 		}
 	elsif(($ActBatLevel - $MinBatLevel) > (0 * $RemainingVoltageQuater))
@@ -359,12 +413,12 @@ sub BatteryStatusFunction($$)
 		if(ReadingsVal($Device, "motorErr", "ok") eq "lowBat" || ReadingsVal($Device, "motorErr", "ok") eq "ValveErrorPosition")
 		  {
 			# empty!
-			fhem("setreading $BatteryStatus $Device 0");
+			readingsSingleUpdate($defs{$BatteryStatus}, $Device, 0, 0);
 			# check if message was already sent
 			if(ReadingsVal($BatteryStatusBot, $SignalDevice, "low") ne "low")
 			{
 			  # set signal state to low
-			  fhem("setreading $BatteryStatusBot $SignalDevice low");
+			  readingsSingleUpdate($defs{$BatteryStatusBot}, $SignalDevice, "low", 0);
 			  #send message via TelegramBot
 			  if(ReadingsVal($Device, "motorErr", "ok") eq "ValveErrorPosition")
 			  {
@@ -379,19 +433,19 @@ sub BatteryStatusFunction($$)
 		 else
 		  {
 			# between 0% and 25%
-			fhem("setreading $BatteryStatus $Device 25");
+			readingsSingleUpdate($defs{$BatteryStatus}, $Device, 25, 0);
 		  }
 		}
 	else
 		{
 		  # totally empty
-		  fhem("setreading $BatteryStatus $Device 0");
+		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 0, 0);
 
 		  # check if message was already sent
 		  if(ReadingsVal($BatteryStatusBot, $SignalDevice, "low") ne "low")
 		  {
 			# set signal state to low
-			fhem("setreading $BatteryStatusBot $SignalDevice low");
+			readingsSingleUpdate($defs{$BatteryStatusBot}, $SignalDevice, "low", 0);
 			#send message via TelegramBot
 			fhem($msg." ".$text_soon);
 		  }
@@ -410,57 +464,57 @@ sub BatteryStatusFunction($$)
 		 # set date/time for changed battery if it was low before (so probably a change happended)
 		if(ReadingsVal($BatteryStatusBot, $SignalDevice, "none") eq "low" || ReadingsVal($BatteryStatus, $Device, 100) < 25)
 		  {
-			fhem("setreading $BatteryChanged $Device $text_changed");
+			readingsSingleUpdate($defs{$BatteryChanged}, $Device, $text_changed, 0);
 		  }
 
 		  # set the battery value to 75% - 100%
-		  fhem("setreading $BatteryStatus $Device 100");
+		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 100, 0);
 
 		  # set the signal state back to none
 		if(ReadingsVal($BatteryStatusBot, $SignalDevice, "none") ne "none")
 		  {
-			fhem("setreading $BatteryStatusBot $SignalDevice none");
+			readingsSingleUpdate($defs{$BatteryStatusBot}, $SignalDevice, "none", 0);
 		  }
 		}
 	elsif($ActBatLevel > 50)
 		{
 		  # between 50% and 75%
-		  fhem("setreading $BatteryStatus $Device 75");
+		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 75, 0);
 
 		  # set the signal state back to none
 		if(ReadingsVal($BatteryStatusBot, $SignalDevice, "none") ne "none")
 		  {
-			fhem("setreading $BatteryStatusBot $SignalDevice none");
+			readingsSingleUpdate($defs{$BatteryStatusBot}, $SignalDevice, "none", 0);
 		  }
 		}
 	elsif($ActBatLevel > 25)
 		{
 		  # between 25% and 50%
-		  fhem("setreading $BatteryStatus $Device 50");
+		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 50, 0);
 
 		  # set the signal state back to none
 		if(ReadingsVal($BatteryStatusBot, $SignalDevice, "none") ne "none")
 		  {
-			fhem("setreading $BatteryStatusBot $SignalDevice none");
+			readingsSingleUpdate($defs{$BatteryStatusBot}, $SignalDevice, "none", 0);
 		  }
 		}
 	elsif($ActBatLevel > 5)
 		{
 		  # between 5% and 25%
-		  fhem("setreading $BatteryStatus $Device 25");
+		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 25, 0);
 
 		  # maybe already send a message! Easy possible with new signal states
 		}
 		else
 		{
 		  # totally empty (below 5%)
-		  fhem("setreading $BatteryStatus $Device 0");
+		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 0, 0);
 
 		  # check if message was already sent
 		  if(ReadingsVal($BatteryStatusBot, $SignalDevice, "low") ne "low")
 		  {
 			# set signal state to low
-			fhem("setreading $BatteryStatusBot $SignalDevice low");
+			readingsSingleUpdate($defs{$BatteryStatusBot}, $SignalDevice, "low", 0);
 			#send message via TelegramBot
 			fhem($msg." ".$text_soon);
 		  }
@@ -479,57 +533,57 @@ sub BatteryStatusFunction($$)
 		 # set date/time for changed battery if it was low before (so probably a change happended)
 		if(ReadingsVal($BatteryStatusBot, $SignalDevice, "none") eq "low" || ReadingsVal($BatteryStatus, $Device, 100) < 25)
 		  {
-			fhem("setreading $BatteryChanged $Device $text_changed");
+			readingsSingleUpdate($defs{$BatteryChanged}, $Device, $text_changed, 0);
 		  }
 
 		  # set the battery value to 75% - 100%
-		  fhem("setreading $BatteryStatus $Device 100");
+		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 100, 0);
 
 		  # set the signal state back to none
 		if(ReadingsVal($BatteryStatusBot, $SignalDevice, "none") ne "none")
 		  {
-			fhem("setreading $BatteryStatusBot $SignalDevice none");
+			readingsSingleUpdate($defs{$BatteryStatusBot}, $SignalDevice, "none", 0);
 		  }
 		}
 	elsif($ActBatLevel > 50)
 		{
 		  # between 50% and 75%
-		  fhem("setreading $BatteryStatus $Device 75");
+		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 75, 0);
 
 		  # set the signal state back to none
 		if(ReadingsVal($BatteryStatusBot, $SignalDevice, "none") ne "none")
 		  {
-			fhem("setreading $BatteryStatusBot $SignalDevice none");
+			readingsSingleUpdate($defs{$BatteryStatusBot}, $SignalDevice, "none", 0);
 		  }
 		}
 	elsif($ActBatLevel > 25)
 		{
 		  # between 25% and 50%
-		  fhem("setreading $BatteryStatus $Device 50");
+		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 50, 0);
 
 		  # set the signal state back to none
 		if(ReadingsVal($BatteryStatusBot, $SignalDevice, "none") ne "none")
 		  {
-			fhem("setreading $BatteryStatusBot $SignalDevice none");
+			readingsSingleUpdate($defs{$BatteryStatusBot}, $SignalDevice, "none", 0);
 		  }
 		}
 	elsif($ActBatLevel > 5)
 		{
 		  # between 5% and 25%
-		  fhem("setreading $BatteryStatus $Device 25");
+		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 25, 0);
 
 		  # maybe already send a message! Easy possible with new signal states
 		}
 		else
 		{
 		  # totally empty (below 5%)
-		  fhem("setreading $BatteryStatus $Device 0");
+		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 0, 0);
 
 		  # check if message was already sent
 		  if(ReadingsVal($BatteryStatusBot, $SignalDevice, "low") ne "low")
 		  {
 			# set signal state to low
-			fhem("setreading $BatteryStatusBot $SignalDevice low");
+			readingsSingleUpdate($defs{$BatteryStatusBot}, $SignalDevice, "low", 0);
 			#send message via TelegramBot
 			fhem($msg." ".$text_soon);
 		  }
