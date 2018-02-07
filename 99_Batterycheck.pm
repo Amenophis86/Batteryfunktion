@@ -615,9 +615,8 @@ sub BatteryStatusFunction($$)
 						fhem($msg." ".$text_soon);
 						return undef;
 					  }
-					}
 				  }
-				 else
+			    else
 				  {
 					# between 0% and 25%
 					readingsSingleUpdate($defs{$BatteryStatus}, $Device, 25, 0);
@@ -636,6 +635,7 @@ sub BatteryStatusFunction($$)
 			  fhem($msg." ".$text_now);
 			}
 		}
+    }
    }
    
    ##############################################
