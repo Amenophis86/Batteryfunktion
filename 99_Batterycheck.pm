@@ -35,6 +35,8 @@ sub BatteryStatusFunction($$)
   my $TempAt_Max = 43200;
   my $FivePercent_Xiaomi = 600;
   my $TempAt_Xiaomi = 43200;
+  my $FivePercent_ZWave = 600;
+  my $TempAt_ZWave = 600;
   my $FivePercent_LaCrosse = 600;
   my $TempAt_LaCrosse = 43200;
   my $FivePercent_Other = 600;
