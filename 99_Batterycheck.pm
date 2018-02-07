@@ -98,6 +98,11 @@ sub BatteryStatusFunction($$)
 		  CommandDelete(undef,"at_BatLow_".$Device)  if (defined($defs{"at_BatLow_".$Device})); #if defined delete it, battery not dead yet or allready changed?
 		  Log3(undef, 3,"$Device, deleted at_BatLow_".$Device);
 		 }
+		  if(ReadingsVal($BatteryStatus, $Device, undef) eq undef) # set battery level 100% and show in BatteryStatus-Device if new
+		 {
+		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 100,0); 
+		  Log3(undef, 3, "$Device, added to $BatteryStatus");
+		 }
 		 return undef;
 		}
      elsif ($Event eq "battery: low")
@@ -133,7 +138,7 @@ sub BatteryStatusFunction($$)
 			
 			return undef; 
 		  }
-		   elsif ($level < 25 && $level > 10)
+		   elsif ($level < 25 && $level >= 10)
 		  {
 		    $level -=5;
 			readingsSingleUpdate($defs{$BatteryStatus}, $Device, $level,0); # reduce battery level by 5 with every event
@@ -176,6 +181,11 @@ sub BatteryStatusFunction($$)
 		  CommandDelete(undef,"at_BatLow_".$Device)  if (defined($defs{"at_BatLow_".$Device})); #if defined delete it, battery not dead yet or allready changed?
 		  Log3(undef, 3,"$Device, deleted at_BatLow_".$Device);
 		 }
+		  if(ReadingsVal($BatteryStatus, $Device, undef) eq undef) # set battery level 100% and show in BatteryStatus-Device if new
+		 {
+		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 100,0); 
+		  Log3(undef, 3, "$Device, added to $BatteryStatus");
+		 }
 		 return undef;
 		}
      elsif ($Event eq "battery: low")
@@ -211,7 +221,7 @@ sub BatteryStatusFunction($$)
 			
 			return undef; 
 		  }
-		   elsif ($level < 25 && $level > 10)
+		   elsif ($level < 25 && $level >= 10)
 		  {
 		    $level -=5;
 			readingsSingleUpdate($defs{$BatteryStatus}, $Device, $level,0); # reduce battery level by 5 with every event
@@ -253,6 +263,11 @@ sub BatteryStatusFunction($$)
 		  CommandDelete(undef,"at_BatLow_".$Device)  if (defined($defs{"at_BatLow_".$Device})); #if defined delete it, battery not dead yet or allready changed?
 		  Log3(undef, 3,"$Device, deleted at_BatLow_".$Device);
 		 }
+		  if(ReadingsVal($BatteryStatus, $Device, undef) eq undef) # set battery level 100% and show in BatteryStatus-Device if new
+		 {
+		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 100,0); 
+		  Log3(undef, 3, "$Device, added to $BatteryStatus");
+		 }
 		 return undef;
 		}
      elsif ($Event eq "battery: low")
@@ -288,7 +303,7 @@ sub BatteryStatusFunction($$)
 			
 			return undef; 
 		  }
-		   elsif ($level < 25 && $level > 10)
+		   elsif ($level < 25 && $level >= 10)
 		  {
 		    $level -=5;
 			readingsSingleUpdate($defs{$BatteryStatus}, $Device, $level,0); # reduce battery level by 5 with every event
@@ -330,6 +345,11 @@ sub BatteryStatusFunction($$)
 		  CommandDelete(undef,"at_BatLow_".$Device)  if (defined($defs{"at_BatLow_".$Device})); #if defined delete it, battery not dead yet or allready changed?
 		  Log3(undef, 3,"$Device, deleted at_BatLow_".$Device);
 		 }
+		  if(ReadingsVal($BatteryStatus, $Device, undef) eq undef) # set battery level 100% and show in BatteryStatus-Device if new
+		 {
+		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 100,0); 
+		  Log3(undef, 3, "$Device, added to $BatteryStatus");
+		 }
 		 return undef;
 		}
      elsif ($Event eq "battery: low")
@@ -365,7 +385,7 @@ sub BatteryStatusFunction($$)
 			
 			return undef; 
 		  }
-		   elsif ($level < 25 && $level > 10)
+		   elsif ($level < 25 && $level >= 10)
 		  {
 		    $level -=5;
 			readingsSingleUpdate($defs{$BatteryStatus}, $Device, $level,0); # reduce battery level by 5 with every event
@@ -407,6 +427,11 @@ sub BatteryStatusFunction($$)
 		  CommandDelete(undef,"at_BatLow_".$Device)  if (defined($defs{"at_BatLow_".$Device})); #if defined delete it, battery not dead yet or allready changed?
 		  Log3(undef, 3,"$Device, deleted at_BatLow_".$Device);
 		 }
+		  if(ReadingsVal($BatteryStatus, $Device, undef) eq undef) # set battery level 100% and show in BatteryStatus-Device if new
+		 {
+		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 100,0); 
+		  Log3(undef, 3, "$Device, added to $BatteryStatus");
+		 }
 		 return undef;
 		}
      elsif ($Event eq "battery: low")
@@ -442,7 +467,7 @@ sub BatteryStatusFunction($$)
 			
 			return undef; 
 		  }
-		   elsif ($level < 25 && $level > 10)
+		   elsif ($level < 25 && $level >= 10)
 		  {
 		    $level -=5;
 			readingsSingleUpdate($defs{$BatteryStatus}, $Device, $level,0); # reduce battery level by 5 with every event
@@ -484,6 +509,11 @@ sub BatteryStatusFunction($$)
 		  CommandDelete(undef,"at_BatLow_".$Device)  if (defined($defs{"at_BatLow_".$Device})); #if defined delete it, battery not dead yet or allready changed?
 		  Log3(undef, 3,"$Device, deleted at_BatLow_".$Device);
 		 }
+		  if(ReadingsVal($BatteryStatus, $Device, undef) eq undef) # set battery level 100% and show in BatteryStatus-Device if new
+		 {
+		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 100,0); 
+		  Log3(undef, 3, "$Device, added to $BatteryStatus");
+		 }
 		 return undef;
 		}
      elsif ($Event eq "battery: low")
@@ -519,7 +549,7 @@ sub BatteryStatusFunction($$)
 			
 			return undef; 
 		  }
-		   elsif ($level < 25 && $level > 10)
+		   elsif ($level < 25 && $level >= 10)
 		  {
 		    $level -=5;
 			readingsSingleUpdate($defs{$BatteryStatus}, $Device, $level,0); # reduce battery level by 5 with every event
