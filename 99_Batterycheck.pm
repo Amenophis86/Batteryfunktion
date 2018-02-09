@@ -169,7 +169,7 @@ sub BatteryStatusFunction($$)
    ##############################################
    # ZWave Devices with battery
    ##############################################
-   elsif($TYPE eq "ZWave" and ReadingsVal($Device, "batteryLevel", "undef") eq "undef")
+   elsif($TYPE eq "ZWave" and (ReadingsVal($Device, "battery", "undef") eq "ok" || ReadingsVal($Device, "battery", "undef") eq "low" )) #Z-Wave with batteryLevel sets the level in the reading battery
 	{
 	my $level = ReadingsNum($BatteryStatus, $Device, 0);
 
@@ -653,6 +653,69 @@ sub BatteryStatusFunction($$)
 					return undef;
 				  }
 		   }
+		}
+	else
+		{
+		  if(ReadingsVal($BatteryStatus, $Device, 0) != 0) # check befor action if already has the status
+		    {
+			  # totally empty
+			  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 0, 0);
+
+			  #send message
+			  fhem($msg." ".$text_now);
+			}
+		}
+    }
+   }
+   
+   ##############################################
+   # Z-Wave Devices with batteryLevel
+   ##############################################
+   if($TYPE eq "Z-Wave" and ReadingsVal($Device, "battery", undef) =~ "%"))
+   {
+	$ActBatLevel = ReadingsNum($Device, "batteryLevel", "0");
+
+	if($ActBatLevel > 75)
+		{
+		  # check if battery was low before -> possibly changed
+		if(ReadingsVal($BatteryStatus, $Device, 100) < 25)
+		  {
+			# set date/time for changed battery if it was low before (so probably a change happended)
+			readingsSingleUpdate($defs{$BatteryChanged}, $Device, $text_changed, 0);
+		  }
+
+		  # set battery value to 100%
+		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, $ActBatLevel, 0);
+		  
+		  return undef;
+		}
+	elsif(($ActBatLevel > 50)
+		{
+		  # between 50% and 75%
+		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, $ActBatLevel, 0);
+		  
+		  return undef;
+		}
+	elsif($ActBatLevel > 25)
+		{
+		  # between 25% and 50%
+		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, $ActBatLevel, 0);
+		  
+		  return undef;
+		}
+	elsif($ActBatLevel > 0)
+		{
+		  if(ReadingsVal($BatteryStatus, $Device, 0) != 25) # check befor action if already has the status
+		    {
+			fhem($msg." ".$text_soon);
+			
+			$ActBatLevel -=1 if($ActBatLevel == 25); # reduce by one if level is 25 so the message is not send again
+			
+			# between 0% and 25%
+			readingsSingleUpdate($defs{$BatteryStatus}, $Device, $ActBatLevel, 0);
+			
+			return undef;
+			}
 		}
 	else
 		{
