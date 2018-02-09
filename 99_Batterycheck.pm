@@ -673,7 +673,7 @@ sub BatteryStatusFunction($$)
    ##############################################
    # Z-Wave Devices with batteryLevel
    ##############################################
-   if($TYPE eq "Z-Wave" and ReadingsVal($Device, "battery", undef) =~ "%")
+   if($TYPE eq "ZWave" and ReadingsVal($Device, "battery", undef) =~ "%")
    {
 	$ActBatLevel = ReadingsNum($Device, "batteryLevel", "0");
 
