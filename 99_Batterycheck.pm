@@ -872,7 +872,7 @@ sub BatteryStatusFunction($$)
 sub SetBatterieIcon($$)
 {
   my ($Device, $Value)  = @_;
-  my $Icon = "measure_battery_" . "$Value"; # here the matching icon is "set"
+  my $Icon = "measure_battery_"; # here the matching icon is "set"
   my $ActionDetectorDevice = "status_" . $Device;
   my $Name = ""; # name for signal state
   my $State = ReadingsVal("ActionDetector", $ActionDetectorDevice, "alive");
@@ -887,15 +887,23 @@ sub SetBatterieIcon($$)
   {
     if($Value > 75)
     {
-      $Icon = $Icon . "\@green"; # between 75% and 100%
+      $Icon = $Icon . "100" . "\@green"; # between 75% and 100%
+    }
+     elsif($Value > 50)
+    {
+      $Icon = $Icon . "75" . "\@green"; # between 25% and 75%
     }
     elsif($Value > 25)
     {
-      $Icon = $Icon . "\@orange"; # between 25% and 75%
+      $Icon = $Icon . "50" . "\@yellow"; # between 25% and 75%
+    }
+	elsif($Value > 10)
+    {
+      $Icon = $Icon . "25" . "\@orange"; # between 25% and 75%
     }
     else
     {
-      $Icon = $Icon . "\@red"; # below 25%
+      $Icon = $Icon . "0" . "\@red"; # below 25%
     }
   }
 
