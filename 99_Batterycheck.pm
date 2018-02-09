@@ -1,8 +1,10 @@
+
 #########################################################################
 # Helper for readingsGroup BatteryStatus:
 # reads the battery states of devices and
 # calculates the battery state in percent (depending on device type) and
 # stores it as reading in corresponding dummy device
+
 sub BatteryStatusFunction($$)
 {
   my ($Device, $Event)  = @_;
@@ -671,7 +673,7 @@ sub BatteryStatusFunction($$)
    ##############################################
    # Z-Wave Devices with batteryLevel
    ##############################################
-   if($TYPE eq "Z-Wave" and ReadingsVal($Device, "battery", undef) =~ "%"))
+   if($TYPE eq "Z-Wave" and ReadingsVal($Device, "battery", undef) =~ "%")
    {
 	$ActBatLevel = ReadingsNum($Device, "batteryLevel", "0");
 
@@ -689,7 +691,7 @@ sub BatteryStatusFunction($$)
 		  
 		  return undef;
 		}
-	elsif(($ActBatLevel > 50)
+	elsif($ActBatLevel > 50)
 		{
 		  # between 50% and 75%
 		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, $ActBatLevel, 0);
@@ -709,7 +711,7 @@ sub BatteryStatusFunction($$)
 		    {
 			fhem($msg." ".$text_soon);
 			
-			$ActBatLevel -=1 if($ActBatLevel == 25); # reduce by one if level is 25 so the message is not send again
+			$ActBatLevel -= 1 if($ActBatLevel == 25); # reduce by one if level is 25 so the message is not send again
 			
 			# between 0% and 25%
 			readingsSingleUpdate($defs{$BatteryStatus}, $Device, $ActBatLevel, 0);
@@ -729,7 +731,7 @@ sub BatteryStatusFunction($$)
 			}
 		}
     }
-   }
+   
    
    ##############################################
    # Xiaomi Devices with batteryLevel
@@ -934,3 +936,4 @@ sub BatteryStart()
  
  fhem("define $Notify notify .*:battery.* {BatteryStatusFunction(\$NAME, \$EVENT)}; attr $Notify room $Room;")
 }
+
