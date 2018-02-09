@@ -1,4 +1,3 @@
-
 #########################################################################
 # Helper for readingsGroup BatteryStatus:
 # reads the battery states of devices and
@@ -172,7 +171,7 @@ sub BatteryStatusFunction($$)
    # ZWave Devices with battery
    ##############################################
    elsif($TYPE eq "ZWave" and (ReadingsVal($Device, "battery", "undef") eq "ok" || ReadingsVal($Device, "battery", "undef") eq "low" )) #Z-Wave with batteryLevel sets the level in the reading battery
-	{
+	{	
 	my $level = ReadingsNum($BatteryStatus, $Device, 0);
 
     if($Event eq "battery: ok")
@@ -499,7 +498,7 @@ sub BatteryStatusFunction($$)
    ##############################################
    # All other Devices with battery
    ##############################################
-   elsif (ReadingsVal($Device, "batteryLevel", "undef") eq "undef")
+   elsif (ReadingsVal($Device, "batteryLevel", "undef") eq "undef" and $TYPE ne "ZWave")
 	{
 	my $level = ReadingsNum($BatteryStatus, $Device, 0);
 
@@ -675,7 +674,15 @@ sub BatteryStatusFunction($$)
    ##############################################
    if($TYPE eq "ZWave" and ReadingsVal($Device, "battery", undef) =~ "%")
    {
-	$ActBatLevel = ReadingsNum($Device, "batteryLevel", "0");
+	Log 3, ReadingsVal($Device, "battery", undef);
+	$ActBatLevel = ReadingsNum($Device, "battery", "0");
+	
+	if(ReadingsNum($BatteryStatus, $Device, undef) == undef) # set battery level 100% and show in BatteryStatus-Device if new
+		 {
+		  readingsSingleUpdate($defs{$BatteryStatus},$Device, $ActBatLevel,0); 
+		  Log3(undef, 3, "$Device, added to $BatteryStatus");
+		  return;
+		 }
 
 	if($ActBatLevel > 75)
 		{
