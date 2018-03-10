@@ -1,3 +1,18 @@
+##############################################
+# $Id: BatteryCheck.pm 7570 2018-03-06 20:55:44Z Amenophis86 $
+#
+
+package main;
+
+use strict;
+use warnings;
+use POSIX;
+
+sub BatteryCheckUtils_Initialize($$)
+{
+  my ($hash) = @_;
+}
+
 #########################################################################
 # Helper for readingsGroup BatteryStatus:
 # reads the battery states of devices and
@@ -952,3 +967,4 @@ sub BatteryStart()
  fhem("define $Notify notify .*:battery.* {BatteryStatusFunction(\$NAME, \$EVENT)}; attr $Notify room $Room;")
 }
 
+1;
