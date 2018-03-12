@@ -1,5 +1,5 @@
 ##############################################
-# $Id: BatteryCheck.pm 7570 2018-03-06 20:55:44Z Amenophis86 $
+# $Id: BatteryCheckUtils.pm 7570 2018-03-06 20:55:44Z Amenophis86 $
 #
 
 package main;
@@ -933,7 +933,7 @@ sub BatteryStart()
  #Define Dummys for script
  my $BatteryStatus = "BatterieStatus"; #Name of the Dummy for status
  my $BatteryChanged = "BatterieWechsel"; #Name of the Dummy for battery changed information
- my $ReadingsGroup = "rgBatteryStatus"; #Name of the ReadingsGroup
+ my $ReadingsGroup = "rgBatterieStatus"; #Name of the ReadingsGroup
  my $Room = "Z_System->BatteryCheck"; #room for the dummys
  my $Notify = "NO.BatterieNotify"; #Name of the Notify for sending battery information
  
