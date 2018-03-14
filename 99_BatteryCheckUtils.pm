@@ -31,6 +31,7 @@ sub BatteryStatusFunction($$)
   my $MaxBattery = 3.1; # two 1.5V batteries have a measured voltage of 3.1V or even 3.2V
   my @DeviceNameParts = split(/_/,$Device); # to filter out HM_ Devices from neighbor or test system or newly included ones
   my $SignalDevice = $Device . "_BatState";
+  my $Loglevel = 3;
 
 ###############################
 # Here you can change the variables to fit your installation.
@@ -79,7 +80,7 @@ sub BatteryStatusFunction($$)
   # ignoring Devices that were just created by autocreate
   if($DeviceNameParts[0] eq "HM" || $DeviceNameParts[0] eq "ZWave" || $DeviceNameParts[0] eq "MAX" || $DeviceNameParts[0] eq "LaCrosse")
   {
-    Log3(undef, 1, "my_StoreBatteryStatus      ignoring Device: $Device");
+    if($Loglevel >=1) {Log3(undef, 1, "BatteryStatus ignoring Device: $Device");}
     return;
   }
     
@@ -108,32 +109,32 @@ sub BatteryStatusFunction($$)
 
     if($Event eq "battery: ok")
 		{
-		 # Log3(undef, 3,"$Device, Batt ok");
+		 if($Loglevel >=3) { Log3(undef, 3,"$Device, Batt ok");}
 		  if (defined($defs{"at_BatLow_".$Device})) # temporary at allready defined?
 		 {
 		  CommandDelete(undef,"at_BatLow_".$Device)  if (defined($defs{"at_BatLow_".$Device})); #if defined delete it, battery not dead yet or allready changed?
-		  Log3(undef, 3,"$Device, deleted at_BatLow_".$Device);
+		  if($Loglevel >=3) {Log3(undef, 3,"$Device, deleted at_BatLow_".$Device);}
 		 }
-		  if(ReadingsVal($BatteryStatus, $Device, undef) eq undef) # set battery level 100% and show in BatteryStatus-Device if new
+		  if(ReadingsNum($BatteryStatus, $Device, undef) eq undef) # set battery level 100% and show in BatteryStatus-Device if new
 		 {
 		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 100,0); 
-		  Log3(undef, 3, "$Device, added to $BatteryStatus");
+		  if($Loglevel >=3) {Log3(undef, 3, "$Device, added to $BatteryStatus");}
 		 }
-		  if(ReadingsVal($BatteryStatus, $Device, 100) <= 25)
+		  if(ReadingsNum($BatteryStatus, $Device, 100) <= 25)
 		 {
 		  # set date/time for changed battery if it was low before (so probably a change happended)
 		  readingsSingleUpdate($defs{$BatteryChanged}, $Device, $text_changed, 0); 
 		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 100, 0);
-		  Log3(undef, 3, "$Device, BatteryChange");
+		  if($Loglevel >=3) {Log3(undef, 3, "$Device, BatteryChange");}
 		 }
 		 return undef;
 		}
      elsif ($Event eq "battery: low")
 		{
-		 Log3(undef, 3,"$Device, Batt low");
+		 if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt low");}
 		 
 		return undef  if (ReadingsAge($BatteryStatus, $Device,0) < $FivePercent_HM); #take some time since the last event
-		 Log3(undef, 3,"$Device, Batt low2");
+		 if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt low2");}
 		  if($level == 100)
 		  {
 		   readingsSingleUpdate($defs{$BatteryStatus},$Device, 75,0); # set battery level 75%
@@ -143,7 +144,7 @@ sub BatteryStatusFunction($$)
 		  {
 			$level -=5;
 			readingsSingleUpdate($defs{$BatteryStatus}, $Device, $level,0); # reduce battery level by 5 with every event
-			Log3(undef, 3,"$Device, Batt Level $level");
+			if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt Level $level");}
 			return undef;
 		  } 
 		   elsif ($level == 25)
@@ -153,11 +154,11 @@ sub BatteryStatusFunction($$)
 			my $time_s = strftime("\%H:\%M:\%S", gmtime($TempAt_HM));  # 12 hours waittime for the temp at  
 			my $error = CommandDefine(undef, "at_BatLow_".$Device." at +".$time_s." {BatteryStatusFunction('".$Device."','battery: dead')}");
 			if (!$error) { $attr{"at_BatLow_".$Device}{room} = AttrVal($BatteryStatus,"room","Unsorted"); }
-			else { Log3(undef, 3,"$Device, temp at error -> $error"); }
+			else { if($Loglevel >=1) {Log3(undef, 1,"$Device, temp at error -> $error");} }
 			
 			$level -=5;
 			readingsSingleUpdate($defs{$BatteryStatus}, $Device, $level,0); # reduce battery level by 5 with every event
-			Log3(undef, 3,"$Device, Batt Level $level");
+			if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt Level $level");}
 			
 			return undef; 
 		  }
@@ -165,7 +166,7 @@ sub BatteryStatusFunction($$)
 		  {
 		    $level -=5;
 			readingsSingleUpdate($defs{$BatteryStatus}, $Device, $level,0); # reduce battery level by 5 with every event
-			Log3(undef, 3,"$Device, Batt Level $level");
+			if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt Level $level");}
 			
 			return undef; 
 		  }
@@ -173,18 +174,18 @@ sub BatteryStatusFunction($$)
 		  {
 		    return undef;
 		  }
-		   else { Log3(undef, 3,"$Device, unknown Level $level") if ($level);}
+		   else { if($Loglevel >=1) {Log3(undef, 1,"$Device, unknown Level $level") if ($level);}}
 		}
      elsif ($Event eq "battery: dead")
 		{
-		 Log3(undef, 3,"$Device, dead Event !");
+		 if($Loglevel >=3) {Log3(undef, 3,"$Device, dead Event !");}
 		 readingsSingleUpdate($defs{$BatteryStatus},$Device,0,1); # set device 0 with an event 
 		 fhem($msg." ".$text_now);
 		 return undef;
 		}
      else
 		{
-		 Log3(undef, 3,"$Device, unknown Event $Event");
+		 if($Loglevel >=1) {Log3(undef, 1,"$Device, unknown Event $Event");}
 		}
 	}
    
@@ -198,32 +199,32 @@ sub BatteryStatusFunction($$)
 
     if($Event eq "battery: ok")
 		{
-		 # Log3(undef, 3,"$Device, Batt ok");
+		 if($Loglevel >=3) { Log3(undef, 3,"$Device, Batt ok");}
 		  if (defined($defs{"at_BatLow_".$Device})) # temporary at allready defined?
 		 {
 		  CommandDelete(undef,"at_BatLow_".$Device)  if (defined($defs{"at_BatLow_".$Device})); #if defined delete it, battery not dead yet or allready changed?
-		  Log3(undef, 3,"$Device, deleted at_BatLow_".$Device);
+		  if($Loglevel >=3) {Log3(undef, 3,"$Device, deleted at_BatLow_".$Device);}
 		 }
-		  if(ReadingsVal($BatteryStatus, $Device, undef) eq undef) # set battery level 100% and show in BatteryStatus-Device if new
+		  if(ReadingsNum($BatteryStatus, $Device, undef) eq undef) # set battery level 100% and show in BatteryStatus-Device if new
 		 {
 		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 100,0); 
-		  Log3(undef, 3, "$Device, added to $BatteryStatus");
+		  if($Loglevel >=3) {Log3(undef, 3, "$Device, added to $BatteryStatus");}
 		 }
-		  if(ReadingsVal($BatteryStatus, $Device, 100) <= 25)
+		  if(ReadingsNum($BatteryStatus, $Device, 100) <= 25)
 		 {
 		  # set date/time for changed battery if it was low before (so probably a change happended)
 		  readingsSingleUpdate($defs{$BatteryChanged}, $Device, $text_changed, 0); 
 		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 100, 0);
-		  Log3(undef, 3, "$Device, BatteryChange");
+		  if($Loglevel >=3) {Log3(undef, 3, "$Device, BatteryChange");}
 		 }
 		 return undef;
 		}
      elsif ($Event eq "battery: low")
 		{
-		 Log3(undef, 3,"$Device, Batt low");
+		 if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt low");}
 		 
 		return undef  if (ReadingsAge($BatteryStatus, $Device,0) < $FivePercent_ZWave); #take some time since the last event
-		 Log3(undef, 3,"$Device, Batt low2");
+		 if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt low2");}
 		  if($level == 100)
 		  {
 		   readingsSingleUpdate($defs{$BatteryStatus},$Device, 75,0); # set battery level 75%
@@ -233,7 +234,7 @@ sub BatteryStatusFunction($$)
 		  {
 			$level -=5;
 			readingsSingleUpdate($defs{$BatteryStatus}, $Device, $level,0); # reduce battery level by 5 with every event
-			Log3(undef, 3,"$Device, Batt Level $level");
+			if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt Level $level");}
 			return undef;
 		  } 
 		   elsif ($level == 25)
@@ -243,11 +244,11 @@ sub BatteryStatusFunction($$)
 			my $time_s = strftime("\%H:\%M:\%S", gmtime($TempAt_ZWave));  # 12 hours waittime for the temp at  
 			my $error = CommandDefine(undef, "at_BatLow_".$Device." at +".$time_s." {BatteryStatusFunction('".$Device."','battery: dead')}");
 			if (!$error) { $attr{"at_BatLow_".$Device}{room} = AttrVal($BatteryStatus,"room","Unsorted"); }
-			else { Log3(undef, 3,"$Device, temp at error -> $error"); }
+			else { if($Loglevel >=1) {Log3(undef, 1,"$Device, temp at error -> $error");} }
 			
 			$level -=5;
 			readingsSingleUpdate($defs{$BatteryStatus}, $Device, $level,0); # reduce battery level by 5 with every event
-			Log3(undef, 3,"$Device, Batt Level $level");
+			if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt Level $level");}
 			
 			return undef; 
 		  }
@@ -255,26 +256,26 @@ sub BatteryStatusFunction($$)
 		  {
 		    $level -=5;
 			readingsSingleUpdate($defs{$BatteryStatus}, $Device, $level,0); # reduce battery level by 5 with every event
-			Log3(undef, 3,"$Device, Batt Level $level");
+			if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt Level $level");}
 			
-			return undef;		   
+			return undef; 
 		  }
 		   elsif($level == 5)
 		  {
 		    return undef;
 		  }
-		   else { Log3(undef, 3,"$Device, unknown Level $level") if ($level);}
+		   else { if($Loglevel >=1) {Log3(undef, 1,"$Device, unknown Level $level") if ($level);}}
 		}
      elsif ($Event eq "battery: dead")
 		{
-		 Log3(undef, 3,"$Device, dead Event !");
+		 if($Loglevel >=3) {Log3(undef, 3,"$Device, dead Event !");}
 		 readingsSingleUpdate($defs{$BatteryStatus},$Device,0,1); # set device 0 with an event 
 		 fhem($msg." ".$text_now);
 		 return undef;
 		}
      else
 		{
-		 Log3(undef, 3,"$Device, unknown Event $Event");
+		 if($Loglevel >=1) {Log3(undef, 1,"$Device, unknown Event $Event");}
 		}
 	}
    
@@ -287,32 +288,32 @@ sub BatteryStatusFunction($$)
 
     if($Event eq "battery: ok")
 		{
-		 # Log3(undef, 3,"$Device, Batt ok");
+		 if($Loglevel >=3) { Log3(undef, 3,"$Device, Batt ok");}
 		  if (defined($defs{"at_BatLow_".$Device})) # temporary at allready defined?
 		 {
 		  CommandDelete(undef,"at_BatLow_".$Device)  if (defined($defs{"at_BatLow_".$Device})); #if defined delete it, battery not dead yet or allready changed?
-		  Log3(undef, 3,"$Device, deleted at_BatLow_".$Device);
+		  if($Loglevel >=3) {Log3(undef, 3,"$Device, deleted at_BatLow_".$Device);}
 		 }
-		  if(ReadingsVal($BatteryStatus, $Device, undef) eq undef) # set battery level 100% and show in BatteryStatus-Device if new
+		  if(ReadingsNum($BatteryStatus, $Device, undef) eq undef) # set battery level 100% and show in BatteryStatus-Device if new
 		 {
 		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 100,0); 
-		  Log3(undef, 3, "$Device, added to $BatteryStatus");
+		  if($Loglevel >=3) {Log3(undef, 3, "$Device, added to $BatteryStatus");}
 		 }
-		  if(ReadingsVal($BatteryStatus, $Device, 100) <= 25)
+		  if(ReadingsNum($BatteryStatus, $Device, 100) <= 25)
 		 {
 		  # set date/time for changed battery if it was low before (so probably a change happended)
 		  readingsSingleUpdate($defs{$BatteryChanged}, $Device, $text_changed, 0); 
 		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 100, 0);
-		  Log3(undef, 3, "$Device, BatteryChange");
+		  if($Loglevel >=3) {Log3(undef, 3, "$Device, BatteryChange");}
 		 }
 		 return undef;
 		}
      elsif ($Event eq "battery: low")
 		{
-		 Log3(undef, 3,"$Device, Batt low");
+		 if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt low");}
 		 
 		return undef  if (ReadingsAge($BatteryStatus, $Device,0) < $FivePercent_Xiaomi); #take some time since the last event
-		 Log3(undef, 3,"$Device, Batt low2");
+		 if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt low2");}
 		  if($level == 100)
 		  {
 		   readingsSingleUpdate($defs{$BatteryStatus},$Device, 75,0); # set battery level 75%
@@ -322,7 +323,7 @@ sub BatteryStatusFunction($$)
 		  {
 			$level -=5;
 			readingsSingleUpdate($defs{$BatteryStatus}, $Device, $level,0); # reduce battery level by 5 with every event
-			Log3(undef, 3,"$Device, Batt Level $level");
+			if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt Level $level");}
 			return undef;
 		  } 
 		   elsif ($level == 25)
@@ -332,11 +333,11 @@ sub BatteryStatusFunction($$)
 			my $time_s = strftime("\%H:\%M:\%S", gmtime($TempAt_Xiaomi));  # 12 hours waittime for the temp at  
 			my $error = CommandDefine(undef, "at_BatLow_".$Device." at +".$time_s." {BatteryStatusFunction('".$Device."','battery: dead')}");
 			if (!$error) { $attr{"at_BatLow_".$Device}{room} = AttrVal($BatteryStatus,"room","Unsorted"); }
-			else { Log3(undef, 3,"$Device, temp at error -> $error"); }
+			else { if($Loglevel >=1) {Log3(undef, 1,"$Device, temp at error -> $error");} }
 			
 			$level -=5;
 			readingsSingleUpdate($defs{$BatteryStatus}, $Device, $level,0); # reduce battery level by 5 with every event
-			Log3(undef, 3,"$Device, Batt Level $level");
+			if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt Level $level");}
 			
 			return undef; 
 		  }
@@ -344,26 +345,26 @@ sub BatteryStatusFunction($$)
 		  {
 		    $level -=5;
 			readingsSingleUpdate($defs{$BatteryStatus}, $Device, $level,0); # reduce battery level by 5 with every event
-			Log3(undef, 3,"$Device, Batt Level $level");
+			if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt Level $level");}
 			
-			return undef;
+			return undef; 
 		  }
 		   elsif($level == 5)
 		  {
 		    return undef;
 		  }
-		   else { Log3(undef, 3,"$Device, unknown Level $level") if ($level);}
+		   else { if($Loglevel >=1) {Log3(undef, 1,"$Device, unknown Level $level") if ($level);}}
 		}
      elsif ($Event eq "battery: dead")
 		{
-		 Log3(undef, 3,"$Device, dead Event !");
+		 if($Loglevel >=3) {Log3(undef, 3,"$Device, dead Event !");}
 		 readingsSingleUpdate($defs{$BatteryStatus},$Device,0,1); # set device 0 with an event 
 		 fhem($msg." ".$text_now);
 		 return undef;
 		}
      else
 		{
-		 Log3(undef, 3,"$Device, unknown Event $Event");
+		 if($Loglevel >=1) {Log3(undef, 1,"$Device, unknown Event $Event");}
 		}
 	}
    
@@ -376,32 +377,32 @@ sub BatteryStatusFunction($$)
 
     if($Event eq "battery: ok")
 		{
-		 # Log3(undef, 3,"$Device, Batt ok");
+		 if($Loglevel >=3) { Log3(undef, 3,"$Device, Batt ok");}
 		  if (defined($defs{"at_BatLow_".$Device})) # temporary at allready defined?
 		 {
 		  CommandDelete(undef,"at_BatLow_".$Device)  if (defined($defs{"at_BatLow_".$Device})); #if defined delete it, battery not dead yet or allready changed?
-		  Log3(undef, 3,"$Device, deleted at_BatLow_".$Device);
+		  if($Loglevel >=3) {Log3(undef, 3,"$Device, deleted at_BatLow_".$Device);}
 		 }
-		  if(ReadingsVal($BatteryStatus, $Device, undef) eq undef) # set battery level 100% and show in BatteryStatus-Device if new
+		  if(ReadingsNum($BatteryStatus, $Device, undef) eq undef) # set battery level 100% and show in BatteryStatus-Device if new
 		 {
 		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 100,0); 
-		  Log3(undef, 3, "$Device, added to $BatteryStatus");
+		  if($Loglevel >=3) {Log3(undef, 3, "$Device, added to $BatteryStatus");}
 		 }
-		  if(ReadingsVal($BatteryStatus, $Device, 100) <= 25)
+		  if(ReadingsNum($BatteryStatus, $Device, 100) <= 25)
 		 {
 		  # set date/time for changed battery if it was low before (so probably a change happended)
 		  readingsSingleUpdate($defs{$BatteryChanged}, $Device, $text_changed, 0); 
 		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 100, 0);
-		  Log3(undef, 3, "$Device, BatteryChange");
+		  if($Loglevel >=3) {Log3(undef, 3, "$Device, BatteryChange");}
 		 }
 		 return undef;
 		}
      elsif ($Event eq "battery: low")
 		{
-		 Log3(undef, 3,"$Device, Batt low");
+		 if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt low");}
 		 
 		return undef  if (ReadingsAge($BatteryStatus, $Device,0) < $FivePercent_Max); #take some time since the last event
-		 Log3(undef, 3,"$Device, Batt low2");
+		 if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt low2");}
 		  if($level == 100)
 		  {
 		   readingsSingleUpdate($defs{$BatteryStatus},$Device, 75,0); # set battery level 75%
@@ -411,7 +412,7 @@ sub BatteryStatusFunction($$)
 		  {
 			$level -=5;
 			readingsSingleUpdate($defs{$BatteryStatus}, $Device, $level,0); # reduce battery level by 5 with every event
-			Log3(undef, 3,"$Device, Batt Level $level");
+			if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt Level $level");}
 			return undef;
 		  } 
 		   elsif ($level == 25)
@@ -421,11 +422,11 @@ sub BatteryStatusFunction($$)
 			my $time_s = strftime("\%H:\%M:\%S", gmtime($TempAt_Max));  # 12 hours waittime for the temp at  
 			my $error = CommandDefine(undef, "at_BatLow_".$Device." at +".$time_s." {BatteryStatusFunction('".$Device."','battery: dead')}");
 			if (!$error) { $attr{"at_BatLow_".$Device}{room} = AttrVal($BatteryStatus,"room","Unsorted"); }
-			else { Log3(undef, 3,"$Device, temp at error -> $error"); }
+			else { if($Loglevel >=1) {Log3(undef, 1,"$Device, temp at error -> $error");} }
 			
 			$level -=5;
 			readingsSingleUpdate($defs{$BatteryStatus}, $Device, $level,0); # reduce battery level by 5 with every event
-			Log3(undef, 3,"$Device, Batt Level $level");
+			if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt Level $level");}
 			
 			return undef; 
 		  }
@@ -433,28 +434,28 @@ sub BatteryStatusFunction($$)
 		  {
 		    $level -=5;
 			readingsSingleUpdate($defs{$BatteryStatus}, $Device, $level,0); # reduce battery level by 5 with every event
-			Log3(undef, 3,"$Device, Batt Level $level");
+			if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt Level $level");}
 			
-			return undef;
+			return undef; 
 		  }
 		   elsif($level == 5)
 		  {
 		    return undef;
 		  }
-		   else { Log3(undef, 3,"$Device, unknown Level $level") if ($level);}
+		   else { if($Loglevel >=1) {Log3(undef, 1,"$Device, unknown Level $level") if ($level);}}
 		}
      elsif ($Event eq "battery: dead")
 		{
-		 Log3(undef, 3,"$Device, dead Event !");
+		 if($Loglevel >=3) {Log3(undef, 3,"$Device, dead Event !");}
 		 readingsSingleUpdate($defs{$BatteryStatus},$Device,0,1); # set device 0 with an event 
 		 fhem($msg." ".$text_now);
 		 return undef;
 		}
      else
 		{
-		 Log3(undef, 3,"$Device, unknown Event $Event");
+		 if($Loglevel >=1) {Log3(undef, 1,"$Device, unknown Event $Event");}
 		}
-   }
+	}
    
    ##############################################
    # LaCrosse Devices with battery
@@ -465,32 +466,32 @@ sub BatteryStatusFunction($$)
 
     if($Event eq "battery: ok")
 		{
-		 # Log3(undef, 3,"$Device, Batt ok");
+		 if($Loglevel >=3) { Log3(undef, 3,"$Device, Batt ok");}
 		  if (defined($defs{"at_BatLow_".$Device})) # temporary at allready defined?
 		 {
 		  CommandDelete(undef,"at_BatLow_".$Device)  if (defined($defs{"at_BatLow_".$Device})); #if defined delete it, battery not dead yet or allready changed?
-		  Log3(undef, 3,"$Device, deleted at_BatLow_".$Device);
+		  if($Loglevel >=3) {Log3(undef, 3,"$Device, deleted at_BatLow_".$Device);}
 		 }
-		  if(ReadingsVal($BatteryStatus, $Device, undef) eq undef) # set battery level 100% and show in BatteryStatus-Device if new
+		  if(ReadingsNum($BatteryStatus, $Device, undef) eq undef) # set battery level 100% and show in BatteryStatus-Device if new
 		 {
 		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 100,0); 
-		  Log3(undef, 3, "$Device, added to $BatteryStatus");
+		  if($Loglevel >=3) {Log3(undef, 3, "$Device, added to $BatteryStatus");}
 		 }
-		  if(ReadingsVal($BatteryStatus, $Device, 100) <= 25)
+		  if(ReadingsNum($BatteryStatus, $Device, 100) <= 25)
 		 {
 		  # set date/time for changed battery if it was low before (so probably a change happended)
 		  readingsSingleUpdate($defs{$BatteryChanged}, $Device, $text_changed, 0); 
 		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 100, 0);
-		  Log3(undef, 3, "$Device, BatteryChange");
+		  if($Loglevel >=3) {Log3(undef, 3, "$Device, BatteryChange");}
 		 }
 		 return undef;
 		}
      elsif ($Event eq "battery: low")
 		{
-		 Log3(undef, 3,"$Device, Batt low");
+		 if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt low");}
 		 
 		return undef  if (ReadingsAge($BatteryStatus, $Device,0) < $FivePercent_LaCrosse); #take some time since the last event
-		 Log3(undef, 3,"$Device, Batt low2");
+		 if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt low2");}
 		  if($level == 100)
 		  {
 		   readingsSingleUpdate($defs{$BatteryStatus},$Device, 75,0); # set battery level 75%
@@ -500,7 +501,7 @@ sub BatteryStatusFunction($$)
 		  {
 			$level -=5;
 			readingsSingleUpdate($defs{$BatteryStatus}, $Device, $level,0); # reduce battery level by 5 with every event
-			Log3(undef, 3,"$Device, Batt Level $level");
+			if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt Level $level");}
 			return undef;
 		  } 
 		   elsif ($level == 25)
@@ -510,11 +511,11 @@ sub BatteryStatusFunction($$)
 			my $time_s = strftime("\%H:\%M:\%S", gmtime($TempAt_LaCrosse));  # 12 hours waittime for the temp at  
 			my $error = CommandDefine(undef, "at_BatLow_".$Device." at +".$time_s." {BatteryStatusFunction('".$Device."','battery: dead')}");
 			if (!$error) { $attr{"at_BatLow_".$Device}{room} = AttrVal($BatteryStatus,"room","Unsorted"); }
-			else { Log3(undef, 3,"$Device, temp at error -> $error"); }
+			else { if($Loglevel >=1) {Log3(undef, 1,"$Device, temp at error -> $error");} }
 			
 			$level -=5;
 			readingsSingleUpdate($defs{$BatteryStatus}, $Device, $level,0); # reduce battery level by 5 with every event
-			Log3(undef, 3,"$Device, Batt Level $level");
+			if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt Level $level");}
 			
 			return undef; 
 		  }
@@ -522,26 +523,26 @@ sub BatteryStatusFunction($$)
 		  {
 		    $level -=5;
 			readingsSingleUpdate($defs{$BatteryStatus}, $Device, $level,0); # reduce battery level by 5 with every event
-			Log3(undef, 3,"$Device, Batt Level $level");
+			if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt Level $level");}
 			
-			return undef;
+			return undef; 
 		  }
 		   elsif($level == 5)
 		  {
 		    return undef;
-		  }		  
-		   else { Log3(undef, 3,"$Device, unknown Level $level") if ($level);}
+		  }
+		   else { if($Loglevel >=1) {Log3(undef, 1,"$Device, unknown Level $level") if ($level);}}
 		}
      elsif ($Event eq "battery: dead")
 		{
-		 Log3(undef, 3,"$Device, dead Event !");
+		 if($Loglevel >=3) {Log3(undef, 3,"$Device, dead Event !");}
 		 readingsSingleUpdate($defs{$BatteryStatus},$Device,0,1); # set device 0 with an event 
 		 fhem($msg." ".$text_now);
 		 return undef;
 		}
      else
 		{
-		 Log3(undef, 3,"$Device, unknown Event $Event");
+		 if($Loglevel >=1) {Log3(undef, 1,"$Device, unknown Event $Event");}
 		}
 	}
    
@@ -554,32 +555,32 @@ sub BatteryStatusFunction($$)
 
     if($Event eq "battery: ok")
 		{
-		 # Log3(undef, 3,"$Device, Batt ok");
+		 if($Loglevel >=3) { Log3(undef, 3,"$Device, Batt ok");}
 		  if (defined($defs{"at_BatLow_".$Device})) # temporary at allready defined?
 		 {
 		  CommandDelete(undef,"at_BatLow_".$Device)  if (defined($defs{"at_BatLow_".$Device})); #if defined delete it, battery not dead yet or allready changed?
-		  Log3(undef, 3,"$Device, deleted at_BatLow_".$Device);
+		  if($Loglevel >=3) {Log3(undef, 3,"$Device, deleted at_BatLow_".$Device);}
 		 }
-		  if(ReadingsVal($BatteryStatus, $Device, undef) eq undef) # set battery level 100% and show in BatteryStatus-Device if new
+		  if(ReadingsNum($BatteryStatus, $Device, undef) eq undef) # set battery level 100% and show in BatteryStatus-Device if new
 		 {
 		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 100,0); 
-		  Log3(undef, 3, "$Device, added to $BatteryStatus");
+		  if($Loglevel >=3) {Log3(undef, 3, "$Device, added to $BatteryStatus");}
 		 }
-		  if(ReadingsVal($BatteryStatus, $Device, 100) <= 25)
+		  if(ReadingsNum($BatteryStatus, $Device, 100) <= 25)
 		 {
 		  # set date/time for changed battery if it was low before (so probably a change happended)
 		  readingsSingleUpdate($defs{$BatteryChanged}, $Device, $text_changed, 0); 
 		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 100, 0);
-		  Log3(undef, 3, "$Device, BatteryChange");
+		  if($Loglevel >=3) {Log3(undef, 3, "$Device, BatteryChange");}
 		 }
 		 return undef;
 		}
      elsif ($Event eq "battery: low")
 		{
-		 Log3(undef, 3,"$Device, Batt low");
+		 if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt low");}
 		 
 		return undef  if (ReadingsAge($BatteryStatus, $Device,0) < $FivePercent_Other); #take some time since the last event
-		 Log3(undef, 3,"$Device, Batt low2");
+		 if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt low2");}
 		  if($level == 100)
 		  {
 		   readingsSingleUpdate($defs{$BatteryStatus},$Device, 75,0); # set battery level 75%
@@ -589,7 +590,7 @@ sub BatteryStatusFunction($$)
 		  {
 			$level -=5;
 			readingsSingleUpdate($defs{$BatteryStatus}, $Device, $level,0); # reduce battery level by 5 with every event
-			Log3(undef, 3,"$Device, Batt Level $level");
+			if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt Level $level");}
 			return undef;
 		  } 
 		   elsif ($level == 25)
@@ -599,11 +600,11 @@ sub BatteryStatusFunction($$)
 			my $time_s = strftime("\%H:\%M:\%S", gmtime($TempAt_Other));  # 12 hours waittime for the temp at  
 			my $error = CommandDefine(undef, "at_BatLow_".$Device." at +".$time_s." {BatteryStatusFunction('".$Device."','battery: dead')}");
 			if (!$error) { $attr{"at_BatLow_".$Device}{room} = AttrVal($BatteryStatus,"room","Unsorted"); }
-			else { Log3(undef, 3,"$Device, temp at error -> $error"); }
+			else { if($Loglevel >=1) {Log3(undef, 1,"$Device, temp at error -> $error");} }
 			
 			$level -=5;
 			readingsSingleUpdate($defs{$BatteryStatus}, $Device, $level,0); # reduce battery level by 5 with every event
-			Log3(undef, 3,"$Device, Batt Level $level");
+			if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt Level $level");}
 			
 			return undef; 
 		  }
@@ -611,31 +612,29 @@ sub BatteryStatusFunction($$)
 		  {
 		    $level -=5;
 			readingsSingleUpdate($defs{$BatteryStatus}, $Device, $level,0); # reduce battery level by 5 with every event
-			Log3(undef, 3,"$Device, Batt Level $level");
+			if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt Level $level");}
 			
-			return undef;
+			return undef; 
 		  }
 		   elsif($level == 5)
 		  {
 		    return undef;
 		  }
-		   else { Log3(undef, 3,"$Device, unknown Level $level") if ($level);}
+		   else { if($Loglevel >=1) {Log3(undef, 1,"$Device, unknown Level $level") if ($level);}}
 		}
      elsif ($Event eq "battery: dead")
 		{
-		 Log3(undef, 3,"$Device, dead Event !");
+		 if($Loglevel >=3) {Log3(undef, 3,"$Device, dead Event !");}
 		 readingsSingleUpdate($defs{$BatteryStatus},$Device,0,1); # set device 0 with an event 
 		 fhem($msg." ".$text_now);
 		 return undef;
 		}
      else
 		{
-		 Log3(undef, 3,"$Device, unknown Event $Event");
+		 if($Loglevel >=1) {Log3(undef, 1,"$Device, unknown Event $Event");}
 		}
 	}
-  
   }
-  
   #############################################
   #############################################
   # Every device with batteryLevel reading
@@ -653,10 +652,17 @@ sub BatteryStatusFunction($$)
 	$MinBatLevel = ReadingsNum($Device, "R-lowBatLimitRT", "0.0");
 	$RemainingVoltageQuater = ($MaxBattery - $MinBatLevel) / 4; # to get 4 quaters for different colours and icons
 
+	if(ReadingsNum($BatteryStatus, $Device, undef) eq undef) # set battery level 100% and show in BatteryStatus-Device if new
+		 {
+		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 100,0); 
+		  if($Loglevel >=1) {Log3(undef, 1, "$Device, added to $BatteryStatus");}
+		  return undef;
+		 }	
+	
 	if(($ActBatLevel - $MinBatLevel) > (3 * $RemainingVoltageQuater))
 		{
 		  # check if battery was low before -> possibly changed
-		if(ReadingsVal($BatteryStatus, $Device, 100) <= 25)
+		if(ReadingsNum($BatteryStatus, $Device, 100) <= 25)
 		  {
 			# set date/time for changed battery if it was low before (so probably a change happended)
 			readingsSingleUpdate($defs{$BatteryChanged}, $Device, $text_changed, 0);
@@ -683,7 +689,7 @@ sub BatteryStatusFunction($$)
 		}
 	elsif(($ActBatLevel - $MinBatLevel) > (0 * $RemainingVoltageQuater))
 		{
-		  if(ReadingsVal($BatteryStatus, $Device, 0) != 25) # check befor action if already has the status
+		  if(ReadingsNum($BatteryStatus, $Device, 0) != 25) # check befor action if already has the status
 		    {
 				# check for critical stuff
 				if(ReadingsVal($Device, "motorErr", "ok") eq "lowBat" || ReadingsVal($Device, "motorErr", "ok") eq "ValveErrorPosition")
@@ -714,7 +720,7 @@ sub BatteryStatusFunction($$)
 		}
 	else
 		{
-		  if(ReadingsVal($BatteryStatus, $Device, 0) != 0) # check befor action if already has the status
+		  if(ReadingsNum($BatteryStatus, $Device, 0) != 0) # check befor action if already has the status
 		    {
 			  # totally empty
 			  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 0, 0);
@@ -722,8 +728,8 @@ sub BatteryStatusFunction($$)
 			  #send message
 			  fhem($msg." ".$text_now);
 			}
+		 return undef;	
 		}
-    }
    }
    
    ##############################################
@@ -731,20 +737,19 @@ sub BatteryStatusFunction($$)
    ##############################################
    if($TYPE eq "ZWave" and ReadingsVal($Device, "battery", undef) =~ "%")
    {
-	Log 3, ReadingsVal($Device, "battery", undef);
 	$ActBatLevel = ReadingsNum($Device, "battery", "0");
 	
-	if(ReadingsNum($BatteryStatus, $Device, undef) == undef) # set battery level 100% and show in BatteryStatus-Device if new
+	if(ReadingsNum($BatteryStatus, $Device, undef) eq undef) # set battery level 100% and show in BatteryStatus-Device if new
 		 {
-		  readingsSingleUpdate($defs{$BatteryStatus},$Device, $ActBatLevel,0); 
-		  Log3(undef, 3, "$Device, added to $BatteryStatus");
+		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 100,0); 
+		  if($Loglevel >=1) {Log3(undef, 1, "$Device, added to $BatteryStatus");}
 		  return;
 		 }
 
 	if($ActBatLevel > 75)
 		{
 		  # check if battery was low before -> possibly changed
-		if(ReadingsVal($BatteryStatus, $Device, 100) <= 25)
+		if(ReadingsNum($BatteryStatus, $Device, 100) <= 25)
 		  {
 			# set date/time for changed battery if it was low before (so probably a change happended)
 			readingsSingleUpdate($defs{$BatteryChanged}, $Device, $text_changed, 0);
@@ -771,7 +776,7 @@ sub BatteryStatusFunction($$)
 		}
 	elsif($ActBatLevel > 0)
 		{
-		  if(ReadingsVal($BatteryStatus, $Device, 0) != 25) # check befor action if already has the status
+		  if(ReadingsNum($BatteryStatus, $Device, 0) != 25) # check befor action if already has the status
 		    {
 			fhem($msg." ".$text_soon);
 			
@@ -785,7 +790,7 @@ sub BatteryStatusFunction($$)
 		}
 	else
 		{
-		  if(ReadingsVal($BatteryStatus, $Device, 0) != 0) # check befor action if already has the status
+		  if(ReadingsNum($BatteryStatus, $Device, 0) != 0) # check befor action if already has the status
 		    {
 			  # totally empty
 			  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 0, 0);
@@ -793,6 +798,7 @@ sub BatteryStatusFunction($$)
 			  #send message
 			  fhem($msg." ".$text_now);
 			}
+		 return undef;
 		}
     }
    
@@ -804,10 +810,17 @@ sub BatteryStatusFunction($$)
    {
     $ActBatLevel = ReadingsNum($Device, "batteryLevel", "0");
 
+	if(ReadingsNum($BatteryStatus, $Device, undef) eq undef) # set battery level 100% and show in BatteryStatus-Device if new
+		 {
+		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 100,0); 
+		  if($Loglevel >=1) {Log3(undef, 1, "$Device, added to $BatteryStatus");}
+		  return;
+		 }
+	
 	if($ActBatLevel > 75)
 	   {
 		 # set date/time for changed battery if it was low before (so probably a change happended)
-		if(ReadingsVal($BatteryStatus, $Device, 100) <= 25)
+		if(ReadingsNum($BatteryStatus, $Device, 100) <= 25)
 		  {
 			readingsSingleUpdate($defs{$BatteryChanged}, $Device, $text_changed, 0);
 		  }
@@ -833,7 +846,7 @@ sub BatteryStatusFunction($$)
 		}
 	elsif($ActBatLevel > 5)
 		{
-		  if(ReadingsVal($BatteryStatus, $Device, 0) != 25) # check befor action if already has the status
+		  if(ReadingsNum($BatteryStatus, $Device, 0) != 25) # check befor action if already has the status
 		    {
 			  # between 5% and 25%
 			  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 25, 0);
@@ -846,7 +859,7 @@ sub BatteryStatusFunction($$)
 		}
 	else
 		{
-		  if(ReadingsVal($BatteryStatus, $Device, 0) != 0) # check befor action if already has the status
+		  if(ReadingsNum($BatteryStatus, $Device, 0) != 0) # check befor action if already has the status
 		    {
 			  # totally empty (below 5%)
 			  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 0, 0);
@@ -866,10 +879,17 @@ sub BatteryStatusFunction($$)
    {
     $ActBatLevel = ReadingsNum($Device, "batteryLevel", "0");
 
+	if(ReadingsNum($BatteryStatus, $Device, undef) eq undef) # set battery level 100% and show in BatteryStatus-Device if new
+		 {
+		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 100,0); 
+		  if($Loglevel >=1) {Log3(undef, 1, "$Device, added to $BatteryStatus");}
+		  return;
+		 }
+	
 	if($ActBatLevel > 75)
 	   {
 		 # set date/time for changed battery if it was low before (so probably a change happended)
-		if(ReadingsVal($BatteryStatus, $Device, 100) <= 25)
+		if(ReadingsNum($BatteryStatus, $Device, 100) <= 25)
 		  {
 			readingsSingleUpdate($defs{$BatteryChanged}, $Device, $text_changed, 0);
 		  }
@@ -895,7 +915,7 @@ sub BatteryStatusFunction($$)
 		}
 	elsif($ActBatLevel > 5)
 		{
-		  if(ReadingsVal($BatteryStatus, $Device, 0) != 25) # check befor action if already has the status
+		  if(ReadingsNum($BatteryStatus, $Device, 0) != 25) # check befor action if already has the status
 		    {
 			  # between 5% and 25%
 			  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 25, 0);
@@ -908,7 +928,7 @@ sub BatteryStatusFunction($$)
 		}
 	else
 		{
-		  if(ReadingsVal($BatteryStatus, $Device, 0) != 0) # check befor action if already has the status
+		  if(ReadingsNum($BatteryStatus, $Device, 0) != 0) # check befor action if already has the status
 		    {
 			  # totally empty (below 5%)
 			  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 0, 0);
@@ -919,6 +939,8 @@ sub BatteryStatusFunction($$)
 		  
 		  return undef;
 		}
+    }
+
   }
 
 }
