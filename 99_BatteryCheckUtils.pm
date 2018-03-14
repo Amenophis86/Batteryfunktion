@@ -119,6 +119,11 @@ sub BatteryStatusFunction($$)
 		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 100,0); 
 		  Log3(undef, 3, "$Device, added to $BatteryStatus");
 		 }
+		  if(ReadingsVal($BatterieStatus, $Device, 100) <= 25)
+		 {
+		  # set date/time for changed battery if it was low before (so probably a change happended)
+		  readingsSingleUpdate($defs{$BatteryChanged}, $Device, $text_changed, 0); 
+		 }
 		 return undef;
 		}
      elsif ($Event eq "battery: low")
@@ -202,6 +207,11 @@ sub BatteryStatusFunction($$)
 		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 100,0); 
 		  Log3(undef, 3, "$Device, added to $BatteryStatus");
 		 }
+		  if(ReadingsVal($BatterieStatus, $Device, 100) <= 25)
+		 {
+		  # set date/time for changed battery if it was low before (so probably a change happended)
+		  readingsSingleUpdate($defs{$BatteryChanged}, $Device, $text_changed, 0); 
+		 }
 		 return undef;
 		}
      elsif ($Event eq "battery: low")
@@ -283,6 +293,11 @@ sub BatteryStatusFunction($$)
 		 {
 		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 100,0); 
 		  Log3(undef, 3, "$Device, added to $BatteryStatus");
+		 }
+		  if(ReadingsVal($BatterieStatus, $Device, 100) <= 25)
+		 {
+		  # set date/time for changed battery if it was low before (so probably a change happended)
+		  readingsSingleUpdate($defs{$BatteryChanged}, $Device, $text_changed, 0); 
 		 }
 		 return undef;
 		}
@@ -366,6 +381,11 @@ sub BatteryStatusFunction($$)
 		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 100,0); 
 		  Log3(undef, 3, "$Device, added to $BatteryStatus");
 		 }
+		  if(ReadingsVal($BatterieStatus, $Device, 100) <= 25)
+		 {
+		  # set date/time for changed battery if it was low before (so probably a change happended)
+		  readingsSingleUpdate($defs{$BatteryChanged}, $Device, $text_changed, 0); 
+		 }
 		 return undef;
 		}
      elsif ($Event eq "battery: low")
@@ -448,6 +468,11 @@ sub BatteryStatusFunction($$)
 		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 100,0); 
 		  Log3(undef, 3, "$Device, added to $BatteryStatus");
 		 }
+		  if(ReadingsVal($BatterieStatus, $Device, 100) <= 25)
+		 {
+		  # set date/time for changed battery if it was low before (so probably a change happended)
+		  readingsSingleUpdate($defs{$BatteryChanged}, $Device, $text_changed, 0); 
+		 }
 		 return undef;
 		}
      elsif ($Event eq "battery: low")
@@ -529,6 +554,11 @@ sub BatteryStatusFunction($$)
 		 {
 		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 100,0); 
 		  Log3(undef, 3, "$Device, added to $BatteryStatus");
+		 }
+		  if(ReadingsVal($BatterieStatus, $Device, 100) <= 25)
+		 {
+		  # set date/time for changed battery if it was low before (so probably a change happended)
+		  readingsSingleUpdate($defs{$BatteryChanged}, $Device, $text_changed, 0); 
 		 }
 		 return undef;
 		}
@@ -614,7 +644,7 @@ sub BatteryStatusFunction($$)
 	if(($ActBatLevel - $MinBatLevel) > (3 * $RemainingVoltageQuater))
 		{
 		  # check if battery was low before -> possibly changed
-		if(ReadingsVal($BatteryStatus, $Device, 100) < 25)
+		if(ReadingsVal($BatteryStatus, $Device, 100) <= 25)
 		  {
 			# set date/time for changed battery if it was low before (so probably a change happended)
 			readingsSingleUpdate($defs{$BatteryChanged}, $Device, $text_changed, 0);
@@ -702,7 +732,7 @@ sub BatteryStatusFunction($$)
 	if($ActBatLevel > 75)
 		{
 		  # check if battery was low before -> possibly changed
-		if(ReadingsVal($BatteryStatus, $Device, 100) < 25)
+		if(ReadingsVal($BatteryStatus, $Device, 100) <= 25)
 		  {
 			# set date/time for changed battery if it was low before (so probably a change happended)
 			readingsSingleUpdate($defs{$BatteryChanged}, $Device, $text_changed, 0);
@@ -765,7 +795,7 @@ sub BatteryStatusFunction($$)
 	if($ActBatLevel > 75)
 	   {
 		 # set date/time for changed battery if it was low before (so probably a change happended)
-		if(ReadingsVal($BatteryStatus, $Device, 100) < 25)
+		if(ReadingsVal($BatteryStatus, $Device, 100) <= 25)
 		  {
 			readingsSingleUpdate($defs{$BatteryChanged}, $Device, $text_changed, 0);
 		  }
@@ -827,7 +857,7 @@ sub BatteryStatusFunction($$)
 	if($ActBatLevel > 75)
 	   {
 		 # set date/time for changed battery if it was low before (so probably a change happended)
-		if(ReadingsVal($BatteryStatus, $Device, 100) < 25)
+		if(ReadingsVal($BatteryStatus, $Device, 100) <= 25)
 		  {
 			readingsSingleUpdate($defs{$BatteryChanged}, $Device, $text_changed, 0);
 		  }
