@@ -123,6 +123,8 @@ sub BatteryStatusFunction($$)
 		 {
 		  # set date/time for changed battery if it was low before (so probably a change happended)
 		  readingsSingleUpdate($defs{$BatteryChanged}, $Device, $text_changed, 0); 
+		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 100, 0);
+		  Log3(undef, 3, "$Device, BatteryChange");
 		 }
 		 return undef;
 		}
@@ -211,6 +213,8 @@ sub BatteryStatusFunction($$)
 		 {
 		  # set date/time for changed battery if it was low before (so probably a change happended)
 		  readingsSingleUpdate($defs{$BatteryChanged}, $Device, $text_changed, 0); 
+		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 100, 0);
+		  Log3(undef, 3, "$Device, BatteryChange");
 		 }
 		 return undef;
 		}
@@ -298,6 +302,8 @@ sub BatteryStatusFunction($$)
 		 {
 		  # set date/time for changed battery if it was low before (so probably a change happended)
 		  readingsSingleUpdate($defs{$BatteryChanged}, $Device, $text_changed, 0); 
+		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 100, 0);
+		  Log3(undef, 3, "$Device, BatteryChange");
 		 }
 		 return undef;
 		}
@@ -385,6 +391,8 @@ sub BatteryStatusFunction($$)
 		 {
 		  # set date/time for changed battery if it was low before (so probably a change happended)
 		  readingsSingleUpdate($defs{$BatteryChanged}, $Device, $text_changed, 0); 
+		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 100, 0);
+		  Log3(undef, 3, "$Device, BatteryChange");
 		 }
 		 return undef;
 		}
@@ -472,6 +480,8 @@ sub BatteryStatusFunction($$)
 		 {
 		  # set date/time for changed battery if it was low before (so probably a change happended)
 		  readingsSingleUpdate($defs{$BatteryChanged}, $Device, $text_changed, 0); 
+		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 100, 0);
+		  Log3(undef, 3, "$Device, BatteryChange");
 		 }
 		 return undef;
 		}
@@ -559,6 +569,8 @@ sub BatteryStatusFunction($$)
 		 {
 		  # set date/time for changed battery if it was low before (so probably a change happended)
 		  readingsSingleUpdate($defs{$BatteryChanged}, $Device, $text_changed, 0); 
+		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 100, 0);
+		  Log3(undef, 3, "$Device, BatteryChange");
 		 }
 		 return undef;
 		}
