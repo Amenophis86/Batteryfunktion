@@ -92,13 +92,12 @@ sub BatteryStatusFunction($$)
   #            New devices: ZWave. They deliver battery already in percentage.
   #            New devices: XiaomiFlowerSens. They also deliver batteryLevel but already in percentage.
 
+  
   #############################################
   #############################################
-  # Every device with battery reading
+  # Battery Check
   #############################################
   #############################################
-  if($BatteryType[0] eq "battery") 
-  {
   
    ##############################################
    # HM Devices with battery
@@ -188,6 +187,95 @@ sub BatteryStatusFunction($$)
 		 if($Loglevel >=1) {Log3(undef, 1,"$Device, unknown Event $Event");}
 		}
 	}
+	
+   ##############################################
+   # HM Devices with batteryLevel
+   ##############################################
+   elsif($TYPE eq "CUL_HM" and $BatteryType[0] eq "batteryLevel")
+   {
+	$ActBatLevel = ReadingsVal($Device, "batteryLevel", "0.0");
+	$MinBatLevel = ReadingsNum($Device, "R-lowBatLimitRT", "0.0");
+	$RemainingVoltageQuater = ($MaxBattery - $MinBatLevel) / 4; # to get 4 quaters for different colours and icons
+
+	if(ReadingsNum($BatteryStatus, $Device, undef) eq undef) # set battery level 100% and show in BatteryStatus-Device if new
+		 {
+		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 100,0); 
+		  if($Loglevel >=1) {Log3(undef, 1, "$Device, added to $BatteryStatus");}
+		  return undef;
+		 }	
+	
+	if(($ActBatLevel - $MinBatLevel) > (3 * $RemainingVoltageQuater))
+		{
+		  # check if battery was low before -> possibly changed
+		if(ReadingsNum($BatteryStatus, $Device, 100) <= 25)
+		  {
+			# set date/time for changed battery if it was low before (so probably a change happended)
+			readingsSingleUpdate($defs{$BatteryChanged}, $Device, $text_changed, 0);
+		  }
+
+		  # set battery value to 100%
+		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 100, 0);
+		  
+		  return undef;
+		}
+	elsif(($ActBatLevel - $MinBatLevel) > (2 * $RemainingVoltageQuater))
+		{
+		  # between 50% and 75%
+		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 75, 0);
+		  
+		  return undef;
+		}
+	elsif(($ActBatLevel - $MinBatLevel) > (1 * $RemainingVoltageQuater))
+		{
+		  # between 25% and 50%
+		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 50, 0);
+		  
+		  return undef;
+		}
+	elsif(($ActBatLevel - $MinBatLevel) > (0 * $RemainingVoltageQuater))
+		{
+		  if(ReadingsNum($BatteryStatus, $Device, 0) != 25) # check befor action if already has the status
+		    {
+				# check for critical stuff
+				if(ReadingsVal($Device, "motorErr", "ok") eq "lowBat" || ReadingsVal($Device, "motorErr", "ok") eq "ValveErrorPosition")
+				  {
+					
+					if(ReadingsVal($Device, "motorErr", "ok") eq "ValveErrorPosition")
+					  {
+					    # empty!
+						readingsSingleUpdate($defs{$BatteryStatus}, $Device, 0, 0);
+						fhem($msg." ".$text_now." ".$text_motorErrValve);
+						return undef;
+					  }
+					else
+					  {
+					    # between 0% and 25%
+						readingsSingleUpdate($defs{$BatteryStatus}, $Device, 25, 0);
+						fhem($msg." ".$text_soon);
+						return undef;
+					  }
+				  }
+			    else
+				  {
+					# between 0% and 25%
+					readingsSingleUpdate($defs{$BatteryStatus}, $Device, 25, 0);
+					return undef;
+				  }
+		   }
+		}
+	else
+		{
+		  if(ReadingsNum($BatteryStatus, $Device, 0) != 0) # check befor action if already has the status
+		    {
+			  # totally empty
+			  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 0, 0);
+
+			  #send message
+			  fhem($msg." ".$text_now);
+			}
+		 return undef;	
+		}
+   }
    
    
    ##############################################
@@ -278,6 +366,77 @@ sub BatteryStatusFunction($$)
 		 if($Loglevel >=1) {Log3(undef, 1,"$Device, unknown Event $Event");}
 		}
 	}
+	
+  
+   ##############################################
+   # Z-Wave Devices with batteryLevel
+   ##############################################
+   elsif($TYPE eq "ZWave" and ReadingsVal($Device, "battery", undef) =~ "%")
+   {
+	$ActBatLevel = ReadingsNum($Device, "battery", "0");
+	
+	if(ReadingsNum($BatteryStatus, $Device, undef) eq undef) # set battery level 100% and show in BatteryStatus-Device if new
+		 {
+		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 100,0); 
+		  if($Loglevel >=1) {Log3(undef, 1, "$Device, added to $BatteryStatus");}
+		  return;
+		 }
+
+	if($ActBatLevel > 75)
+		{
+		  # check if battery was low before -> possibly changed
+		if(ReadingsNum($BatteryStatus, $Device, 100) <= 25)
+		  {
+			# set date/time for changed battery if it was low before (so probably a change happended)
+			readingsSingleUpdate($defs{$BatteryChanged}, $Device, $text_changed, 0);
+		  }
+
+		  # set battery value to 100%
+		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, $ActBatLevel, 0);
+		  
+		  return undef;
+		}
+	elsif($ActBatLevel > 50)
+		{
+		  # between 50% and 75%
+		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, $ActBatLevel, 0);
+		  
+		  return undef;
+		}
+	elsif($ActBatLevel > 25)
+		{
+		  # between 25% and 50%
+		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, $ActBatLevel, 0);
+		  
+		  return undef;
+		}
+	elsif($ActBatLevel > 0)
+		{
+		  if(ReadingsNum($BatteryStatus, $Device, 0) != 25) # check befor action if already has the status
+		    {
+			fhem($msg." ".$text_soon);
+			
+			$ActBatLevel -= 1 if($ActBatLevel == 25); # reduce by one if level is 25 so the message is not send again
+			
+			# between 0% and 25%
+			readingsSingleUpdate($defs{$BatteryStatus}, $Device, $ActBatLevel, 0);
+			
+			return undef;
+			}
+		}
+	else
+		{
+		  if(ReadingsNum($BatteryStatus, $Device, 0) != 0) # check befor action if already has the status
+		    {
+			  # totally empty
+			  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 0, 0);
+
+			  #send message
+			  fhem($msg." ".$text_now);
+			}
+		 return undef;
+		}
+    }  
    
    ##############################################
    # Xiaomi Devices with battery
@@ -367,6 +526,75 @@ sub BatteryStatusFunction($$)
 		 if($Loglevel >=1) {Log3(undef, 1,"$Device, unknown Event $Event");}
 		}
 	}
+	
+   ##############################################
+   # Xiaomi Devices with batteryLevel
+   ##############################################
+   elsif($TYPE =~ "Xiaomi" and $BatteryType[0] eq "batteryLevel")
+   {
+    $ActBatLevel = ReadingsNum($Device, "batteryLevel", "0");
+
+	if(ReadingsNum($BatteryStatus, $Device, undef) eq undef) # set battery level 100% and show in BatteryStatus-Device if new
+		 {
+		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 100,0); 
+		  if($Loglevel >=1) {Log3(undef, 1, "$Device, added to $BatteryStatus");}
+		  return;
+		 }
+	
+	if($ActBatLevel > 75)
+	   {
+		 # set date/time for changed battery if it was low before (so probably a change happended)
+		if(ReadingsNum($BatteryStatus, $Device, 100) <= 25)
+		  {
+			readingsSingleUpdate($defs{$BatteryChanged}, $Device, $text_changed, 0);
+		  }
+
+		  # set the battery value to 75% - 100%
+		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 100, 0);
+		  
+		  return undef;
+		}
+	elsif($ActBatLevel > 50)
+		{
+		  # between 50% and 75%
+		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 75, 0);
+		  
+		  return undef;
+		}
+	elsif($ActBatLevel > 25)
+		{
+		  # between 25% and 50%
+		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 50, 0);
+		  
+		  return undef;
+		}
+	elsif($ActBatLevel > 5)
+		{
+		  if(ReadingsNum($BatteryStatus, $Device, 0) != 25) # check befor action if already has the status
+		    {
+			  # between 5% and 25%
+			  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 25, 0);
+			  
+			  fhem($msg." ".$text_soon);
+			  return undef;
+			}
+		  
+		  return undef;
+		}
+	else
+		{
+		  if(ReadingsNum($BatteryStatus, $Device, 0) != 0) # check befor action if already has the status
+		    {
+			  # totally empty (below 5%)
+			  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 0, 0);
+			  		  
+			  fhem($msg." ".$text_now);
+			  return undef;
+			}
+		  
+		  return undef;
+		}
+   }	
    
    ##############################################
    # MAX! Devices with battery
@@ -634,248 +862,12 @@ sub BatteryStatusFunction($$)
 		 if($Loglevel >=1) {Log3(undef, 1,"$Device, unknown Event $Event");}
 		}
 	}
-  }
-  #############################################
-  #############################################
-  # Every device with batteryLevel reading
-  #############################################
-  #############################################
-  elsif($BatteryType[0] eq "batteryLevel")
-  {
-  
-   ##############################################
-   # HM Devices with batteryLevel
-   ##############################################
-   if($TYPE eq "CUL_HM")
-   {
-	$ActBatLevel = ReadingsVal($Device, "batteryLevel", "0.0");
-	$MinBatLevel = ReadingsNum($Device, "R-lowBatLimitRT", "0.0");
-	$RemainingVoltageQuater = ($MaxBattery - $MinBatLevel) / 4; # to get 4 quaters for different colours and icons
-
-	if(ReadingsNum($BatteryStatus, $Device, undef) eq undef) # set battery level 100% and show in BatteryStatus-Device if new
-		 {
-		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 100,0); 
-		  if($Loglevel >=1) {Log3(undef, 1, "$Device, added to $BatteryStatus");}
-		  return undef;
-		 }	
 	
-	if(($ActBatLevel - $MinBatLevel) > (3 * $RemainingVoltageQuater))
-		{
-		  # check if battery was low before -> possibly changed
-		if(ReadingsNum($BatteryStatus, $Device, 100) <= 25)
-		  {
-			# set date/time for changed battery if it was low before (so probably a change happended)
-			readingsSingleUpdate($defs{$BatteryChanged}, $Device, $text_changed, 0);
-		  }
-
-		  # set battery value to 100%
-		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 100, 0);
-		  
-		  return undef;
-		}
-	elsif(($ActBatLevel - $MinBatLevel) > (2 * $RemainingVoltageQuater))
-		{
-		  # between 50% and 75%
-		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 75, 0);
-		  
-		  return undef;
-		}
-	elsif(($ActBatLevel - $MinBatLevel) > (1 * $RemainingVoltageQuater))
-		{
-		  # between 25% and 50%
-		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 50, 0);
-		  
-		  return undef;
-		}
-	elsif(($ActBatLevel - $MinBatLevel) > (0 * $RemainingVoltageQuater))
-		{
-		  if(ReadingsNum($BatteryStatus, $Device, 0) != 25) # check befor action if already has the status
-		    {
-				# check for critical stuff
-				if(ReadingsVal($Device, "motorErr", "ok") eq "lowBat" || ReadingsVal($Device, "motorErr", "ok") eq "ValveErrorPosition")
-				  {
-					
-					if(ReadingsVal($Device, "motorErr", "ok") eq "ValveErrorPosition")
-					  {
-					    # empty!
-						readingsSingleUpdate($defs{$BatteryStatus}, $Device, 0, 0);
-						fhem($msg." ".$text_now." ".$text_motorErrValve);
-						return undef;
-					  }
-					else
-					  {
-					    # between 0% and 25%
-						readingsSingleUpdate($defs{$BatteryStatus}, $Device, 25, 0);
-						fhem($msg." ".$text_soon);
-						return undef;
-					  }
-				  }
-			    else
-				  {
-					# between 0% and 25%
-					readingsSingleUpdate($defs{$BatteryStatus}, $Device, 25, 0);
-					return undef;
-				  }
-		   }
-		}
-	else
-		{
-		  if(ReadingsNum($BatteryStatus, $Device, 0) != 0) # check befor action if already has the status
-		    {
-			  # totally empty
-			  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 0, 0);
-
-			  #send message
-			  fhem($msg." ".$text_now);
-			}
-		 return undef;	
-		}
-   }
-   
-   ##############################################
-   # Z-Wave Devices with batteryLevel
-   ##############################################
-   if($TYPE eq "ZWave" and ReadingsVal($Device, "battery", undef) =~ "%")
-   {
-	$ActBatLevel = ReadingsNum($Device, "battery", "0");
 	
-	if(ReadingsNum($BatteryStatus, $Device, undef) eq undef) # set battery level 100% and show in BatteryStatus-Device if new
-		 {
-		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 100,0); 
-		  if($Loglevel >=1) {Log3(undef, 1, "$Device, added to $BatteryStatus");}
-		  return;
-		 }
-
-	if($ActBatLevel > 75)
-		{
-		  # check if battery was low before -> possibly changed
-		if(ReadingsNum($BatteryStatus, $Device, 100) <= 25)
-		  {
-			# set date/time for changed battery if it was low before (so probably a change happended)
-			readingsSingleUpdate($defs{$BatteryChanged}, $Device, $text_changed, 0);
-		  }
-
-		  # set battery value to 100%
-		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, $ActBatLevel, 0);
-		  
-		  return undef;
-		}
-	elsif($ActBatLevel > 50)
-		{
-		  # between 50% and 75%
-		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, $ActBatLevel, 0);
-		  
-		  return undef;
-		}
-	elsif($ActBatLevel > 25)
-		{
-		  # between 25% and 50%
-		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, $ActBatLevel, 0);
-		  
-		  return undef;
-		}
-	elsif($ActBatLevel > 0)
-		{
-		  if(ReadingsNum($BatteryStatus, $Device, 0) != 25) # check befor action if already has the status
-		    {
-			fhem($msg." ".$text_soon);
-			
-			$ActBatLevel -= 1 if($ActBatLevel == 25); # reduce by one if level is 25 so the message is not send again
-			
-			# between 0% and 25%
-			readingsSingleUpdate($defs{$BatteryStatus}, $Device, $ActBatLevel, 0);
-			
-			return undef;
-			}
-		}
-	else
-		{
-		  if(ReadingsNum($BatteryStatus, $Device, 0) != 0) # check befor action if already has the status
-		    {
-			  # totally empty
-			  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 0, 0);
-
-			  #send message
-			  fhem($msg." ".$text_now);
-			}
-		 return undef;
-		}
-    }
-   
-   
-   ##############################################
-   # Xiaomi Devices with batteryLevel
-   ##############################################
-   elsif($TYPE =~ "Xiaomi")
-   {
-    $ActBatLevel = ReadingsNum($Device, "batteryLevel", "0");
-
-	if(ReadingsNum($BatteryStatus, $Device, undef) eq undef) # set battery level 100% and show in BatteryStatus-Device if new
-		 {
-		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 100,0); 
-		  if($Loglevel >=1) {Log3(undef, 1, "$Device, added to $BatteryStatus");}
-		  return;
-		 }
-	
-	if($ActBatLevel > 75)
-	   {
-		 # set date/time for changed battery if it was low before (so probably a change happended)
-		if(ReadingsNum($BatteryStatus, $Device, 100) <= 25)
-		  {
-			readingsSingleUpdate($defs{$BatteryChanged}, $Device, $text_changed, 0);
-		  }
-
-		  # set the battery value to 75% - 100%
-		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 100, 0);
-		  
-		  return undef;
-		}
-	elsif($ActBatLevel > 50)
-		{
-		  # between 50% and 75%
-		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 75, 0);
-		  
-		  return undef;
-		}
-	elsif($ActBatLevel > 25)
-		{
-		  # between 25% and 50%
-		  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 50, 0);
-		  
-		  return undef;
-		}
-	elsif($ActBatLevel > 5)
-		{
-		  if(ReadingsNum($BatteryStatus, $Device, 0) != 25) # check befor action if already has the status
-		    {
-			  # between 5% and 25%
-			  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 25, 0);
-			  
-			  fhem($msg." ".$text_soon);
-			  return undef;
-			}
-		  
-		  return undef;
-		}
-	else
-		{
-		  if(ReadingsNum($BatteryStatus, $Device, 0) != 0) # check befor action if already has the status
-		    {
-			  # totally empty (below 5%)
-			  readingsSingleUpdate($defs{$BatteryStatus}, $Device, 0, 0);
-			  		  
-			  fhem($msg." ".$text_now);
-			  return undef;
-			}
-		  
-		  return undef;
-		}
-   }
-   
    ##############################################
    # All other Devices with batteryLevel
    ##############################################
-   else
+   elsif ($BatteryType[0] eq "batteryLevel")
    {
     $ActBatLevel = ReadingsNum($Device, "batteryLevel", "0");
 
@@ -940,10 +932,18 @@ sub BatteryStatusFunction($$)
 		  return undef;
 		}
     }
-
-  }
-
+	
+   ##############################################
+   # Unkown Device with Reading Battery
+   ##############################################
+   else
+   {
+    if($Loglevel >=1) {Log3(undef, 1, "$Device, Error! Unkown Device Type with event $Event");} 	
+   }
+	
 }
+  
+  
 
 ##################################################
 # Helper for readingsGroup BatteryStatus:
