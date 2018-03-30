@@ -1,5 +1,5 @@
 ##############################################
-# $Id: BatteryCheckUtils.pm 7570 2018-03-06 20:55:44Z Amenophis86 $
+# $Id: BatteryCheckUtils.pm 7570 2018-03-30 16:55:44Z Amenophis86 $
 #
 
 package main;
@@ -31,7 +31,7 @@ sub BatteryStatusFunction($$)
   my $MaxBattery = 3.1; # two 1.5V batteries have a measured voltage of 3.1V or even 3.2V
   my @DeviceNameParts = split(/_/,$Device); # to filter out HM_ Devices from neighbor or test system or newly included ones
   my $SignalDevice = $Device . "_BatState";
-  my $Loglevel = 3;
+  my $Loglevel = 4;
 
 ###############################
 # Here you can change the variables to fit your installation.
@@ -100,10 +100,19 @@ sub BatteryStatusFunction($$)
   #############################################
   
    ##############################################
+   # HM Devices with batteryLevel but battery Event
+   ##############################################  
+   if($TYPE eq "CUL_HM" and ReadingsVal($Device, "batteryLevel", "undef") ne "undef" and ($Event =~ "ok" or $Event =~ "low"))
+   {
+    if($Loglevel >=3) { Log3(undef, 3,"$Device, '$Event' ignored, has batteryLevel reading");}
+	return undef;
+   }
+  
+   ##############################################
    # HM Devices with battery
    ##############################################
    if($TYPE eq "CUL_HM" and ReadingsVal($Device, "batteryLevel", "undef") eq "undef")
-   {
+   {	
 	my $level = ReadingsNum($BatteryStatus, $Device, 0);
 
     if($Event eq "battery: ok")
@@ -114,7 +123,7 @@ sub BatteryStatusFunction($$)
 		  CommandDelete(undef,"at_BatLow_".$Device)  if (defined($defs{"at_BatLow_".$Device})); #if defined delete it, battery not dead yet or allready changed?
 		  if($Loglevel >=3) {Log3(undef, 3,"$Device, deleted at_BatLow_".$Device);}
 		 }
-		  if(ReadingsNum($BatteryStatus, $Device, undef) eq undef) # set battery level 100% and show in BatteryStatus-Device if new
+		  if(ReadingsVal($BatteryStatus, $Device, "undef") eq "undef") # set battery level 100% and show in BatteryStatus-Device if new
 		 {
 		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 100,0); 
 		  if($Loglevel >=3) {Log3(undef, 3, "$Device, added to $BatteryStatus");}
@@ -193,11 +202,13 @@ sub BatteryStatusFunction($$)
    ##############################################
    elsif($TYPE eq "CUL_HM" and $BatteryType[0] eq "batteryLevel")
    {
+	Log 3, "batteryLevel Strang";
+	
 	$ActBatLevel = ReadingsVal($Device, "batteryLevel", "0.0");
 	$MinBatLevel = ReadingsNum($Device, "R-lowBatLimitRT", "0.0");
 	$RemainingVoltageQuater = ($MaxBattery - $MinBatLevel) / 4; # to get 4 quaters for different colours and icons
 
-	if(ReadingsNum($BatteryStatus, $Device, undef) eq undef) # set battery level 100% and show in BatteryStatus-Device if new
+	if(ReadingsVal($BatteryStatus, $Device, "undef") eq "undef") # set battery level 100% and show in BatteryStatus-Device if new
 		 {
 		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 100,0); 
 		  if($Loglevel >=1) {Log3(undef, 1, "$Device, added to $BatteryStatus");}
@@ -293,7 +304,7 @@ sub BatteryStatusFunction($$)
 		  CommandDelete(undef,"at_BatLow_".$Device)  if (defined($defs{"at_BatLow_".$Device})); #if defined delete it, battery not dead yet or allready changed?
 		  if($Loglevel >=3) {Log3(undef, 3,"$Device, deleted at_BatLow_".$Device);}
 		 }
-		  if(ReadingsNum($BatteryStatus, $Device, undef) eq undef) # set battery level 100% and show in BatteryStatus-Device if new
+		  if(ReadingsVal($BatteryStatus, $Device, "undef") eq "undef") # set battery level 100% and show in BatteryStatus-Device if new
 		 {
 		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 100,0); 
 		  if($Loglevel >=3) {Log3(undef, 3, "$Device, added to $BatteryStatus");}
@@ -371,11 +382,11 @@ sub BatteryStatusFunction($$)
    ##############################################
    # Z-Wave Devices with batteryLevel
    ##############################################
-   elsif($TYPE eq "ZWave" and ReadingsVal($Device, "battery", undef) =~ "%")
+   elsif($TYPE eq "ZWave" and ReadingsVal($Device, "battery", "undef") =~ "%")
    {
 	$ActBatLevel = ReadingsNum($Device, "battery", "0");
 	
-	if(ReadingsNum($BatteryStatus, $Device, undef) eq undef) # set battery level 100% and show in BatteryStatus-Device if new
+	if(ReadingsVal($BatteryStatus, $Device, "undef") eq "undef") # set battery level 100% and show in BatteryStatus-Device if new
 		 {
 		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 100,0); 
 		  if($Loglevel >=1) {Log3(undef, 1, "$Device, added to $BatteryStatus");}
@@ -534,7 +545,7 @@ sub BatteryStatusFunction($$)
    {
     $ActBatLevel = ReadingsNum($Device, "batteryLevel", "0");
 
-	if(ReadingsNum($BatteryStatus, $Device, undef) eq undef) # set battery level 100% and show in BatteryStatus-Device if new
+	if(ReadingsVal($BatteryStatus, $Device, "undef") eq "undef") # set battery level 100% and show in BatteryStatus-Device if new
 		 {
 		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 100,0); 
 		  if($Loglevel >=1) {Log3(undef, 1, "$Device, added to $BatteryStatus");}
@@ -611,7 +622,7 @@ sub BatteryStatusFunction($$)
 		  CommandDelete(undef,"at_BatLow_".$Device)  if (defined($defs{"at_BatLow_".$Device})); #if defined delete it, battery not dead yet or allready changed?
 		  if($Loglevel >=3) {Log3(undef, 3,"$Device, deleted at_BatLow_".$Device);}
 		 }
-		  if(ReadingsNum($BatteryStatus, $Device, undef) eq undef) # set battery level 100% and show in BatteryStatus-Device if new
+		  if(ReadingsVal($BatteryStatus, $Device, "undef") eq "undef") # set battery level 100% and show in BatteryStatus-Device if new
 		 {
 		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 100,0); 
 		  if($Loglevel >=3) {Log3(undef, 3, "$Device, added to $BatteryStatus");}
@@ -700,7 +711,7 @@ sub BatteryStatusFunction($$)
 		  CommandDelete(undef,"at_BatLow_".$Device)  if (defined($defs{"at_BatLow_".$Device})); #if defined delete it, battery not dead yet or allready changed?
 		  if($Loglevel >=3) {Log3(undef, 3,"$Device, deleted at_BatLow_".$Device);}
 		 }
-		  if(ReadingsNum($BatteryStatus, $Device, undef) eq undef) # set battery level 100% and show in BatteryStatus-Device if new
+		  if(ReadingsVal($BatteryStatus, $Device, "undef") eq "undef") # set battery level 100% and show in BatteryStatus-Device if new
 		 {
 		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 100,0); 
 		  if($Loglevel >=3) {Log3(undef, 3, "$Device, added to $BatteryStatus");}
@@ -789,7 +800,7 @@ sub BatteryStatusFunction($$)
 		  CommandDelete(undef,"at_BatLow_".$Device)  if (defined($defs{"at_BatLow_".$Device})); #if defined delete it, battery not dead yet or allready changed?
 		  if($Loglevel >=3) {Log3(undef, 3,"$Device, deleted at_BatLow_".$Device);}
 		 }
-		  if(ReadingsNum($BatteryStatus, $Device, undef) eq undef) # set battery level 100% and show in BatteryStatus-Device if new
+		  if(ReadingsVal($BatteryStatus, $Device, "undef") eq "undef") # set battery level 100% and show in BatteryStatus-Device if new
 		 {
 		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 100,0); 
 		  if($Loglevel >=3) {Log3(undef, 3, "$Device, added to $BatteryStatus");}
@@ -871,7 +882,7 @@ sub BatteryStatusFunction($$)
    {
     $ActBatLevel = ReadingsNum($Device, "batteryLevel", "0");
 
-	if(ReadingsNum($BatteryStatus, $Device, undef) eq undef) # set battery level 100% and show in BatteryStatus-Device if new
+	if(ReadingsVal($BatteryStatus, $Device, "undef") eq "undef") # set battery level 100% and show in BatteryStatus-Device if new
 		 {
 		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 100,0); 
 		  if($Loglevel >=1) {Log3(undef, 1, "$Device, added to $BatteryStatus");}
@@ -1001,8 +1012,8 @@ sub BatteryStart()
  my $Room = "Z_System->BatteryCheck"; #room for the dummys
  my $Notify = "NO.BatterieNotify"; #Name of the Notify for sending battery information
  
- fhem("setdefaultattr room $Room; define $BatteryStatus dummy; define $BatteryChanged dummy; 
-      define $ReadingsGroup readingsGroup NAME=BatterieStatus:.*; attr $ReadingsGroup valueIcon {SetBatterieIcon(\$READING, \$VALUE)};
+ fhem("setdefaultattr room $Room; defmod $BatteryStatus dummy; defmod $BatteryChanged dummy; 
+      defmod $ReadingsGroup readingsGroup NAME=BatterieStatus:.*; attr $ReadingsGroup valueIcon {SetBatterieIcon(\$READING, \$VALUE)};
       attr $ReadingsGroup mapping \$READING; setdefaultattr;");
  
  
