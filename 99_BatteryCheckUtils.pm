@@ -1,5 +1,5 @@
 ##############################################
-# $Id: BatteryCheckUtils.pm 7570 2018-03-30 16:55:44Z Amenophis86 $
+# $Id: BatteryCheckUtils.pm 7570 2018-03-06 20:55:44Z Amenophis86 $
 #
 
 package main;
@@ -30,7 +30,6 @@ sub BatteryStatusFunction($$)
   my $RemainingVoltageQuater = 0.0; # for "calculating" the colors
   my $MaxBattery = 3.1; # two 1.5V batteries have a measured voltage of 3.1V or even 3.2V
   my @DeviceNameParts = split(/_/,$Device); # to filter out HM_ Devices from neighbor or test system or newly included ones
-  my $SignalDevice = $Device . "_BatState";
   my $Loglevel = 4;
 
 ###############################
@@ -83,7 +82,14 @@ sub BatteryStatusFunction($$)
     if($Loglevel >=1) {Log3(undef, 1, "BatteryStatus ignoring Device: $Device");}
     return;
   }
-    
+  
+  # ignore batteryTemperature for example AMAD-Device
+  if($Event =~ "batteryTemperature")
+  {
+   if($Loglevel >= 3) {Log3(undef, 3, "$Event ignored Device: $Device");}
+   return;
+  }
+        
   # actually only devices HM-TC-IT-WM-W-EU and HM-CC-RT-DN have battery level and min-level
   # so calculating the percentage of actual level depending on min-level
   # all others just have battery ok or nok
