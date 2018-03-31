@@ -64,7 +64,7 @@ sub BatteryStatusFunction($$)
 # comment the device you do not want to use
 #
 # TelegramBot
-  my $msg = "set TelegramBot message \@\@Amenophis86 ";
+  my $msg = "set TelegramBot message \@\@User ";
 #
 # msg-command
 # my $msg = "msg \@User title='Battery Check' ";
