@@ -1,5 +1,5 @@
 ##############################################
-# $Id: BatteryCheckUtils.pm 7570 2018-03-06 20:55:44Z Amenophis86 $
+# $Id: BatteryCheckUtils.pm 7570 2018-03-31 08:34:44Z Amenophis86 $
 #
 
 package main;
@@ -64,7 +64,7 @@ sub BatteryStatusFunction($$)
 # comment the device you do not want to use
 #
 # TelegramBot
-  my $msg = "set TelegramBot message \@\@User ";
+  my $msg = "set TelegramBot message \@\@Amenophis86 ";
 #
 # msg-command
 # my $msg = "msg \@User title='Battery Check' ";
@@ -147,6 +147,12 @@ sub BatteryStatusFunction($$)
 		{
 		 if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt low");}
 		 
+		 if(ReadingsVal($BatteryStatus, $Device, "undef") eq "undef") # set battery level 30% and show in BatteryStatus-Device if new
+		 {
+		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 30,0); 
+		  if($Loglevel >=3) {Log3(undef, 3, "$Device, added to $BatteryStatus");}
+		 }
+		 
 		return undef  if (ReadingsAge($BatteryStatus, $Device,0) < $FivePercent_HM); #take some time since the last event
 		 if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt low2");}
 		  if($level == 100)
@@ -207,9 +213,7 @@ sub BatteryStatusFunction($$)
    # HM Devices with batteryLevel
    ##############################################
    elsif($TYPE eq "CUL_HM" and $BatteryType[0] eq "batteryLevel")
-   {
-	Log 3, "batteryLevel Strang";
-	
+   {	
 	$ActBatLevel = ReadingsVal($Device, "batteryLevel", "0.0");
 	$MinBatLevel = ReadingsNum($Device, "R-lowBatLimitRT", "0.0");
 	$RemainingVoltageQuater = ($MaxBattery - $MinBatLevel) / 4; # to get 4 quaters for different colours and icons
@@ -327,6 +331,12 @@ sub BatteryStatusFunction($$)
      elsif ($Event eq "battery: low")
 		{
 		 if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt low");}
+		 
+		 if(ReadingsVal($BatteryStatus, $Device, "undef") eq "undef") # set battery level 30% and show in BatteryStatus-Device if new
+		 {
+		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 30,0); 
+		  if($Loglevel >=3) {Log3(undef, 3, "$Device, added to $BatteryStatus");}
+		 }
 		 
 		return undef  if (ReadingsAge($BatteryStatus, $Device,0) < $FivePercent_ZWave); #take some time since the last event
 		 if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt low2");}
@@ -488,6 +498,12 @@ sub BatteryStatusFunction($$)
 		{
 		 if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt low");}
 		 
+		 if(ReadingsVal($BatteryStatus, $Device, "undef") eq "undef") # set battery level 30% and show in BatteryStatus-Device if new
+		 {
+		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 30,0); 
+		  if($Loglevel >=3) {Log3(undef, 3, "$Device, added to $BatteryStatus");}
+		 }
+		 
 		return undef  if (ReadingsAge($BatteryStatus, $Device,0) < $FivePercent_Xiaomi); #take some time since the last event
 		 if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt low2");}
 		  if($level == 100)
@@ -646,6 +662,12 @@ sub BatteryStatusFunction($$)
 		{
 		 if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt low");}
 		 
+		 if(ReadingsVal($BatteryStatus, $Device, "undef") eq "undef") # set battery level 30% and show in BatteryStatus-Device if new
+		 {
+		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 30,0); 
+		  if($Loglevel >=3) {Log3(undef, 3, "$Device, added to $BatteryStatus");}
+		 }
+		 
 		return undef  if (ReadingsAge($BatteryStatus, $Device,0) < $FivePercent_Max); #take some time since the last event
 		 if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt low2");}
 		  if($level == 100)
@@ -735,6 +757,12 @@ sub BatteryStatusFunction($$)
 		{
 		 if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt low");}
 		 
+		 if(ReadingsVal($BatteryStatus, $Device, "undef") eq "undef") # set battery level 30% and show in BatteryStatus-Device if new
+		 {
+		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 30,0); 
+		  if($Loglevel >=3) {Log3(undef, 3, "$Device, added to $BatteryStatus");}
+		 }
+		 
 		return undef  if (ReadingsAge($BatteryStatus, $Device,0) < $FivePercent_LaCrosse); #take some time since the last event
 		 if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt low2");}
 		  if($level == 100)
@@ -823,6 +851,12 @@ sub BatteryStatusFunction($$)
      elsif ($Event eq "battery: low")
 		{
 		 if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt low");}
+		 
+		 if(ReadingsVal($BatteryStatus, $Device, "undef") eq "undef") # set battery level 30% and show in BatteryStatus-Device if new
+		 {
+		  readingsSingleUpdate($defs{$BatteryStatus},$Device, 30,0); 
+		  if($Loglevel >=3) {Log3(undef, 3, "$Device, added to $BatteryStatus");}
+		 }
 		 
 		return undef  if (ReadingsAge($BatteryStatus, $Device,0) < $FivePercent_Other); #take some time since the last event
 		 if($Loglevel >=3) {Log3(undef, 3,"$Device, Batt low2");}
